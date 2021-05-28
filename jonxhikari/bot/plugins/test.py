@@ -25,12 +25,19 @@ class Test(lightbulb.Plugin):
         super().__init__()
 
     @lightbulb.command(name="ping")
-    async def ping_cmd(self, ctx):
+    async def ping_cmd(self, ctx: lightbulb.Context):
         await ctx.respond(latency := f"{(self.bot.heartbeat_latency * 1000):.0f} ms")
         await ctx.channel.send("testing the send method")
 
+    @lightbulb.checks.owner_only()
+    @lightbulb.command(name="shutdown")
+    async def shutdown_cmd(self, ctx: lightbulb.Context):
+        await ctx.message.delete()
+        await ctx.respond("Shutting down...")
+        await self.bot.close()
+
     @lightbulb.command(name="reload")
-    async def reload_cmd(self, ctx, mod):
+    async def reload_cmd(self, ctx: lightbulb.Context, mod: str):
         if not mod:
             return await ctx.respond("Sorry you have to include a module to reload.")
 
@@ -54,7 +61,6 @@ class Test(lightbulb.Plugin):
                 embed.add_field(name=name, value=value, inline=inline)
 
             await ctx.respond(embed=embed)
-
 
 def load(bot):
     bot.add_plugin(Test(bot))
