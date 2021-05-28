@@ -1,4 +1,5 @@
 from pathlib import Path
+from hikari.events.guild_events import GuildAvailableEvent
 
 import lightbulb
 import hikari
@@ -17,11 +18,11 @@ class Bot(lightbulb.Bot):
         self._dynamic = "./jonxhikari/data/dynamic"
         self._static = "./jonxhikari/data/static"
         self.version = version
+        self.guilds = {}
 
         self.scheduler = AsyncIOScheduler()
         self.session = ClientSession()
         self.db = Database(self)
-
         uvloop.install()
 
         super().__init__(
@@ -35,14 +36,23 @@ class Bot(lightbulb.Bot):
         subscriptions = {
             hikari.StartingEvent: self.on_starting,
             hikari.StartedEvent: self.on_started,
-            hikari.StoppingEvent: self.on_stopping
+            hikari.StoppingEvent: self.on_stopping,
+            hikari.GuildAvailableEvent: self.on_guild_available
         }
 
         for key in subscriptions:
             self.event_manager.subscribe(key, subscriptions[key])
 
-    async def on_starting(self, _: hikari.StartingEvent):
+    async def on_guild_available(self, event: hikari.GuildAvailableEvent):
+        if event.guild.id not in self.guilds:
+            await self.db.execute(
+                "INSERT OR IGNORE INTO guilds (GuildID) VALUES (?)",
+                event.guild.id
+            )
+
+    async def on_starting(self, event: hikari.StartingEvent):
         await self.db.connect()
+        self.guilds = await self.db.column("SELECT GuildID FROM guilds")
 
         for plugin in self._plugins:
             self.load_extension(f"jonxhikari.bot.plugins.{plugin}")
@@ -55,4 +65,3 @@ class Bot(lightbulb.Bot):
         self.scheduler.shutdown()
         await self.session.close()
         await self.db.close()
-
