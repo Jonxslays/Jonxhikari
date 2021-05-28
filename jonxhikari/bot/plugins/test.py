@@ -2,6 +2,22 @@ import lightbulb
 import hikari
 
 
+# TODO build embed utils
+def reload_embed(mod, e = None):
+    if not e or e is lightbulb.errors.ExtensionNotLoaded:
+        return (
+            ("Loaded:", f'```{mod}.py```', True),
+            ("Status:", "```SuccessfulSync```", True),
+            ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
+        )
+
+    return (
+        ("Failed:", f'```{mod}.py```', True),
+        ("Status:", f"```{e.__class__.__name__}```", True),
+        ("Info:", f"```{e} is not a real module.```", False),
+    )
+
+
 class Test(lightbulb.Plugin):
     def __init__(self, bot: lightbulb.Bot):
         self.bot = bot
@@ -24,27 +40,14 @@ class Test(lightbulb.Plugin):
             self.bot.reload_extension(self.plugin_path + mod)
 
         except KeyError as e:
-            fields = (
-                ("Failed:", f'```{mod}.py```', True),
-                ("Status:", f"```{e.__class__.__name__}```", True),
-                ("Info:", f"```{e} is not a real module.```", False),
-            )
+            fields = reload_embed(mod, e)
 
-        except lightbulb.errors.ExtensionNotLoaded:
+        except lightbulb.errors.ExtensionNotLoaded as e:
             self.bot.load_extension(self.plugin_path + mod)
-
-            fields = (
-                ("Reloaded:", f'```{mod}.py```', True),
-                ("Status:", "```SuccessfulSync```", True),
-                ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
-            )
+            fields = reload_embed(mod, e)
 
         else:
-            fields = (
-                ("Reloaded:", f'```{mod}.py```', True),
-                ("Status:", "```SuccessfulSync```", True),
-                ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
-            )
+            fields = reload_embed(mod)
 
         finally:
             for name, value, inline in fields:
