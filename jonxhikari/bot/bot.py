@@ -8,7 +8,6 @@ from aiohttp import ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Secrets
-from jonxhikari import __version__
 from jonxhikari.db import Database
 
 
