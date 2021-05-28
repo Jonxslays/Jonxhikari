@@ -4,7 +4,7 @@ import hikari
 
 # TODO build embed utils
 def reload_embed(mod, e = None):
-    if not e or e is lightbulb.errors.ExtensionNotLoaded:
+    if not e:
         return (
             ("Loaded:", f'```{mod}.py```', True),
             ("Status:", "```SuccessfulSync```", True),
@@ -49,9 +49,9 @@ class Test(lightbulb.Plugin):
         except KeyError as e:
             fields = reload_embed(mod, e)
 
-        except lightbulb.errors.ExtensionNotLoaded as e:
+        except lightbulb.errors.ExtensionNotLoaded:
             self.bot.load_extension(self.plugin_path + mod)
-            fields = reload_embed(mod, e)
+            fields = reload_embed(mod)
 
         else:
             fields = reload_embed(mod)

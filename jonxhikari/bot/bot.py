@@ -42,6 +42,7 @@ class Bot(lightbulb.Bot):
         for key in subscriptions:
             self.event_manager.subscribe(key, subscriptions[key])
 
+    # Fires on new guild join, on startup, and after disconnect
     async def on_guild_available(self, event: hikari.GuildAvailableEvent):
         if event.guild.id not in self.guilds:
             await self.db.execute(
@@ -49,17 +50,28 @@ class Bot(lightbulb.Bot):
                 event.guild.id
             )
 
+    # Fires before bot is connected
+    # Blocks full connection until complete
     async def on_starting(self, event: hikari.StartingEvent):
         await self.db.connect()
-        self.guilds = await self.db.column("SELECT GuildID FROM guilds")
+
+        # List of tuples containing guild ID and prefix
+        for guild in await self.db.records("SELECT * FROM guilds"):
+
+            # Cache prefixes into self.guilds
+            self.guilds[guild[0]] = {
+                "prefix": guild[1]
+            }
 
         for plugin in self._plugins:
             self.load_extension(f"jonxhikari.bot.plugins.{plugin}")
 
+    # Fires once bot is fully connected
     async def on_started(self, _: hikari.StartedEvent):
         self.scheduler.start()
         await self.db.sync()
 
+    # Fires at the beginning of shutdown sequence
     async def on_stopping(self, _: hikari.StoppingEvent):
         self.scheduler.shutdown()
         await self.session.close()
