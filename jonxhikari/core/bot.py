@@ -3,6 +3,7 @@ import time
 import typing as t
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+from hikari.events.shard_events import ShardEvent
 
 import lightbulb
 import hikari
@@ -37,6 +38,7 @@ class Bot(lightbulb.Bot):
         # Initiate hikari BotApp superclass
         super().__init__(
             token = Secrets.TOKEN,
+            owner_ids=[Secrets.OWNER_IDS],
             intents = hikari.Intents.ALL,
             prefix = lightbulb.when_mentioned_or(self.grab_prefix),
             insensitive_commands = True,

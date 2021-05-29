@@ -7,7 +7,6 @@ import hikari
 class Admin(lightbulb.Plugin):
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.bot = bot
-        self.plugin_path = "jonxhikari.core.plugins."
         super().__init__()
 
     @lightbulb.checks.has_guild_permissions(
@@ -34,8 +33,29 @@ class Admin(lightbulb.Plugin):
         await ctx.respond(f"Prefix successfully updated to: `{_prefix}`")
 
 
+class Owner(lightbulb.Plugin):
+    def __init__(self, bot: lightbulb.Bot) -> None:
+        self.bot = bot
+        self.plugin_path = "jonxhikari.core.plugins."
+        super().__init__()
 
-    @lightbulb.checks.owner_only()
+
+    @lightbulb.owner_only()
+    @lightbulb.command(name="load")
+    async def load_cmd(self, ctx: lightbulb.Context) -> None:
+        pass
+
+    @lightbulb.owner_only()
+    @lightbulb.command(name="unload")
+    async def unload_cmd(self, ctx: lightbulb.Context) -> None:
+        pass
+
+    @lightbulb.owner_only()
+    @lightbulb.command(name="reload")
+    async def reload_cmd(self, ctx: lightbulb.Context) -> None:
+        pass
+
+    @lightbulb.owner_only()
     @lightbulb.command(name="shutdown")
     async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
         """Gracefully shuts down Jonxhikari.
@@ -51,7 +71,9 @@ class Admin(lightbulb.Plugin):
 
 def load(bot: lightbulb.Bot) -> None:
     bot.add_plugin(Admin(bot))
+    bot.add_plugin(Owner(bot))
 
 
 def unload(bot: lightbulb.Bot) -> None:
     bot.remove_plugin("Admin")
+    bot.remove_plugin("Owner")

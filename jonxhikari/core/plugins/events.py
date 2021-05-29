@@ -12,7 +12,7 @@ class Events(lightbulb.Plugin):
         """Fires on completion of a command
 
         Args:
-             - _: CommandCompletionEvent
+             - event: CommandCompletionEvent
         """
 
         self.bot._invokes += 1
