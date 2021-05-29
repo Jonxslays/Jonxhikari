@@ -47,43 +47,6 @@ class Admin(lightbulb.Plugin):
         await ctx.respond("Shutting down...")
         await self.bot.close()
 
-    # Returns output for the embed
-    def reload_embed(self, mod: str, e: t.Union[Exception, str] = None) -> tuple:
-        """Creates a tuple of embed fields based on input.
-
-        Args:
-            mod (str): The module being modified.
-            e (Exception, optional): The exception if there was one. Defaults to None.
-
-        Returns:
-            tuple: with fields for an embed.
-        """
-        if not e:
-            return (
-                ("Loaded:", f'```{mod}.py```', True),
-                ("Status:", "```SuccessfulSync```", True),
-                ("Info:", "```Establishing connection.. \nAwaiting tasks..```", False),
-            )
-        elif e == "SuccessfulSync":
-            return (
-                ("Unloaded:", f'```{mod}.py```', True),
-                ("Status:", "```SuccessfulSync```", True),
-                ("Info:", "```Unhooked.. \nSleeping..```", False),
-            ),
-
-
-    @lightbulb.checks.owner_only()
-    @lightbulb.command(name="reload")
-    async def reload_cmd(self, ctx: lightbulb.Context, module: str) -> None:
-        """This command loads/reloads a Jonxhikari module.
-
-        ```Args:\n
-            - ctx: Command context.\n
-            - module: Module to reload.```
-        """
-        pass
-        # TODO re-write this command
-
 
 def load(bot: lightbulb.Bot) -> None:
     bot.add_plugin(Admin(bot))
