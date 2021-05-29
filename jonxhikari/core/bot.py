@@ -109,7 +109,8 @@ class Bot(lightbulb.Bot):
         await self.session.close()
         await self.db.close()
 
-    async def grab_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
+    async def grab_prefix(self, bot: lightbulb.Bot, message: hikari.Message) -> str:
+        """Grabs a prefix to be used in a particular context"""
         if (_id := message.guild_id) in self.guilds:
             return self.guilds[_id]["prefix"]
 
@@ -118,7 +119,6 @@ class Bot(lightbulb.Bot):
 
         return "$"
 
-    @staticmethod
-    async def _dm_commands(message: hikari.Message) -> bool:
+    async def _dm_commands(self, message: hikari.Message) -> bool:
         """Prevents commands invocations in DMs"""
-        return message.guild_id is not None
+        return message.guild_id
