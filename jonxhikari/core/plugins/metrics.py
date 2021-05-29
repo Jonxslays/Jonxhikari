@@ -12,8 +12,8 @@ class Metrics(lightbulb.Plugin):
     @lightbulb.command(name="ping")
     async def ping_cmd(self, ctx: lightbulb.Context) -> None:
         start = time.time()
-        msg = await ctx.respond("**Latency**: " + (latency := f"{(self.bot.heartbeat_latency * 1000):.0f} ms"))
-        await msg.edit(f"**Latency**: {latency}\n**Response**: {((time.time() - start) * 1000):.0f} ms")
+        msg = await ctx.respond(f"**Latency**: {(latency := self.bot.heartbeat_latency * 1000):.0f} ms")
+        await msg.edit(f"**Latency**: {latency:.0f} ms\n**Response**: {((time.time() - start) * 1000):.0f} ms")
 
 
 def load(bot: lightbulb.Bot) -> None:

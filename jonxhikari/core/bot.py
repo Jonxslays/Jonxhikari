@@ -97,11 +97,11 @@ class Bot(lightbulb.Bot):
         for plugin in self._plugins:
             self.load_extension(f"jonxhikari.core.plugins.{plugin}")
 
-async def on_started(self, _: hikari.StartedEvent) -> None:
-    """Fires once bot is fully connected"""
-    await self.db.sync()
-    self.scheduler.start()
-    self.add_check(self._dm_commands)
+    async def on_started(self, _: hikari.StartedEvent) -> None:
+        """Fires once bot is fully connected"""
+        await self.db.sync()
+        self.scheduler.start()
+        self.add_check(self._dm_commands)
 
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""
@@ -118,7 +118,7 @@ async def on_started(self, _: hikari.StartedEvent) -> None:
 
         return "$"
 
-@staticmethod
-async def _dm_commands(message: hikari.Message) -> bool:
-    """Prevents commands invocations in DMs"""
-    return message.guild_id is not None
+    @staticmethod
+    async def _dm_commands(message: hikari.Message) -> bool:
+        """Prevents commands invocations in DMs"""
+        return message.guild_id is not None
