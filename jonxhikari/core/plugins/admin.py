@@ -17,7 +17,7 @@ class Admin(lightbulb.Plugin):
     )
     @lightbulb.command(name="prefix")
     async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
-        """Change or view the my prefix in your server.
+        """Change or view my prefix in your server.
 
         ```Args:\n
             - ctx: Command context.\n
