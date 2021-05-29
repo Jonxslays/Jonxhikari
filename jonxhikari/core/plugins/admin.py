@@ -23,6 +23,7 @@ class Admin(lightbulb.Plugin):
             - ctx: Command context.\n
             - prefix (optional): The new prefix you want. Defaults to None.```
         """
+
         if not _prefix:
             return await ctx.respond(f"The current prefix is `{self.bot.guilds[ctx.guild_id]['prefix']}`.")
 

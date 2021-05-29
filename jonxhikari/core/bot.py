@@ -81,7 +81,7 @@ class Bot(lightbulb.Bot):
                 event.guild_id
             )
 
-    async def on_starting(self, event: hikari.StartingEvent) -> None:
+    async def on_starting(self, _: hikari.StartingEvent) -> None:
         """Fires before bot is connected. Blocks on_started until complete."""
         await self.db.connect()
 
@@ -109,7 +109,7 @@ class Bot(lightbulb.Bot):
         await self.session.close()
         await self.db.close()
 
-    async def grab_prefix(self, bot: lightbulb.Bot, message: hikari.Message) -> str:
+    async def grab_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
         """Grabs a prefix to be used in a particular context"""
         if (_id := message.guild_id) in self.guilds:
             return self.guilds[_id]["prefix"]
