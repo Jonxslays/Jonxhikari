@@ -1,4 +1,5 @@
 import logging
+import typing as t
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -9,12 +10,21 @@ from aiohttp import ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Secrets
-from jonxhikari.db import Database
+from jonxhikari.utils import Errors
+from jonxhikari.core.db import Database
+
+
+async def grab_prefix(bot: lightbulb.Bot, message: hikari.Message) -> str:
+    if (_p := bot.guilds.get(message.guild_id).get("prefix")):
+        return _p
+
+    return await bot.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", message.guild_id)
 
 
 class Bot(lightbulb.Bot):
     def __init__(self, version: str) -> None:
-        self._plugins = [p.stem for p in Path(".").glob("./jonxhikari/bot/plugins/*.py")]
+        self._plugins_dir = "./jonxhikari/core/plugins"
+        self._plugins = [p.stem for p in Path(".").glob(f"{self._plugins_dir}/*.py")]
         self._dynamic = "./jonxhikari/data/dynamic"
         self._static = "./jonxhikari/data/static"
         self.version = version
@@ -22,6 +32,7 @@ class Bot(lightbulb.Bot):
 
         self.scheduler = AsyncIOScheduler()
         self.session = ClientSession()
+        self.errors = Errors()
         self.db = Database(self)
         self.logging_config()
         uvloop.install()
@@ -29,7 +40,7 @@ class Bot(lightbulb.Bot):
         super().__init__(
             token = Secrets.TOKEN,
             intents = hikari.Intents.ALL,
-            prefix = ">>",
+            prefix = lightbulb.when_mentioned_or(grab_prefix),
             insensitive_commands = True,
             ignore_bots = True,
         )
@@ -40,6 +51,7 @@ class Bot(lightbulb.Bot):
             hikari.StartedEvent: self.on_started,
             hikari.StoppingEvent: self.on_stopping,
             hikari.GuildAvailableEvent: self.on_guild_available,
+            lightbulb.CommandErrorEvent: self.on_cmd_exc,
         }
 
         # Subscribe to events
@@ -87,7 +99,7 @@ class Bot(lightbulb.Bot):
 
         # Load plugins from extensions
         for plugin in self._plugins:
-            self.load_extension(f"jonxhikari.bot.plugins.{plugin}")
+            self.load_extension(f"jonxhikari.core.plugins.{plugin}")
 
     # Fires once bot is fully connected
     async def on_started(self, _: hikari.StartedEvent) -> None:
@@ -99,3 +111,7 @@ class Bot(lightbulb.Bot):
         self.scheduler.shutdown()
         await self.session.close()
         await self.db.close()
+
+    # Handles Lightbulb command exception events
+    async def on_cmd_exc(self, event: lightbulb.CommandErrorEvent) -> None:
+        await self.errors.parse(event.context, event.exception)

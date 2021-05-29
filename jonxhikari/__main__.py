@@ -1,7 +1,5 @@
-import hikari
-
 from jonxhikari import __version__
-from jonxhikari.bot import Bot
+from jonxhikari import Bot
 
 
 def main():
