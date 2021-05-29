@@ -87,7 +87,6 @@ class Bot(lightbulb.Bot):
 
         # List of tuples containing guild ID and prefix
         for guild in await self.db.records("SELECT * FROM guilds"):
-
             # Cache prefixes into self.guilds
             self.guilds[guild[0]] = {
                 "prefix": guild[1]

@@ -10,7 +10,6 @@ class Admin(lightbulb.Plugin):
         self.plugin_path = "jonxhikari.core.plugins."
         super().__init__()
 
-    # Change or view the current guild prefix
     @lightbulb.checks.has_guild_permissions(
         hikari.Permissions.ADMINISTRATOR,
         hikari.Permissions.MANAGE_GUILD,
@@ -34,11 +33,12 @@ class Admin(lightbulb.Plugin):
         await self.bot.db.execute("UPDATE guilds SET Prefix = ? WHERE GuildID = ?", _prefix, ctx.guild_id)
         await ctx.respond(f"Prefix successfully updated to: `{_prefix}`")
 
-    # Gracefully shuts down the bot
+
+
     @lightbulb.checks.owner_only()
     @lightbulb.command(name="shutdown")
     async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
-        """Shuts down Jonxhikari.
+        """Gracefully shuts down Jonxhikari.
 
         ```Args:\n
             - ctx: Command context.```
