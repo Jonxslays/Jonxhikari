@@ -11,13 +11,13 @@ from aiohttp import ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Secrets
-from jonxhikari.utils import Errors
 from jonxhikari.core.db import Database
+from jonxhikari.core.utils import Errors
 
 
 async def grab_prefix(bot: lightbulb.Bot, message: hikari.Message) -> str:
-    if (_p := bot.guilds.get(message.guild_id).get("prefix")):
-        return _p
+    if (_id := message.guild_id) in bot.guilds:
+        return bot.guilds[_id]["prefix"]
 
     return await bot.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", message.guild_id)
 
@@ -56,8 +56,6 @@ class Bot(lightbulb.Bot):
             hikari.StartedEvent: self.on_started,
             hikari.StoppingEvent: self.on_stopping,
             hikari.GuildAvailableEvent: self.on_guild_available,
-            lightbulb.CommandErrorEvent: self.on_cmd_exc,
-            lightbulb.CommandCompletionEvent: self.on_cmd,
         }
 
         # Subscribe to events
@@ -84,7 +82,7 @@ class Bot(lightbulb.Bot):
 
     # Fires on new guild join, on startup, and after disconnect
     async def on_guild_available(self, event: hikari.GuildAvailableEvent) -> None:
-        if event.guild.id not in self.guilds:
+        if event.guild_id not in self.guilds:
             await self.db.execute(
                 "INSERT OR IGNORE INTO guilds (GuildID) VALUES (?)",
                 event.guild_id
@@ -117,11 +115,3 @@ class Bot(lightbulb.Bot):
         self.scheduler.shutdown()
         await self.session.close()
         await self.db.close()
-
-    # Fires on completion of a command.
-    async def on_cmd(self, event: lightbulb.CommandCompletionEvent) -> None:
-        self._invokes += 1
-
-    # Handles Lightbulb command exception events
-    async def on_cmd_exc(self, event: lightbulb.CommandErrorEvent) -> None:
-        await self.errors.parse(event.context, event.exception)

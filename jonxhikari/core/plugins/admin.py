@@ -17,6 +17,12 @@ class Admin(lightbulb.Plugin):
     )
     @lightbulb.command(name="prefix")
     async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
+        """Change or view the my prefix in your server.
+
+        ```Args:\n
+            - ctx: Command context.\n
+            - prefix (optional): The new prefix you want. Defaults to None.```
+        """
         if not _prefix:
             return await ctx.respond(f"The current prefix is `{self.bot.guilds[ctx.guild_id]['prefix']}`.")
 
@@ -31,51 +37,52 @@ class Admin(lightbulb.Plugin):
     @lightbulb.checks.owner_only()
     @lightbulb.command(name="shutdown")
     async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
+        """Shuts down Jonxhikari.
+
+        ```Args:\n
+            - ctx: Command context.```
+        """
+
         await ctx.message.delete()
         await ctx.respond("Shutting down...")
         await self.bot.close()
 
     # Returns output for the embed
-    def reload_embed(self, mod: str, e: Exception = None) -> tuple:
+    def reload_embed(self, mod: str, e: t.Union[Exception, str] = None) -> tuple:
+        """Creates a tuple of embed fields based on input.
+
+        Args:
+            mod (str): The module being modified.
+            e (Exception, optional): The exception if there was one. Defaults to None.
+
+        Returns:
+            tuple: with fields for an embed.
+        """
         if not e:
             return (
                 ("Loaded:", f'```{mod}.py```', True),
                 ("Status:", "```SuccessfulSync```", True),
-                ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
+                ("Info:", "```Establishing connection.. \nAwaiting tasks..```", False),
             )
+        elif e == "SuccessfulSync":
+            return (
+                ("Unloaded:", f'```{mod}.py```', True),
+                ("Status:", "```SuccessfulSync```", True),
+                ("Info:", "```Unhooked.. \nSleeping..```", False),
+            ),
 
-        return (
-            ("Failed:", f'```{mod}.py```', True),
-            ("Status:", f"```{e.__class__.__name__}```", True),
-            ("Info:", f"```{e} is not a real module.```", False),
-        )
 
     @lightbulb.checks.owner_only()
     @lightbulb.command(name="reload")
-    async def reload_cmd(self, ctx: lightbulb.Context, mod: str) -> None:
-        if not mod:
-            return await ctx.respond("Sorry you have to include a module to reload.")
+    async def reload_cmd(self, ctx: lightbulb.Context, module: str) -> None:
+        """This command loads/reloads a Jonxhikari module.
 
-        embed = hikari.Embed()
-
-        try:
-            self.bot.reload_extension(self.plugin_path + mod)
-
-        except KeyError as e:
-            fields = self.reload_embed(mod, e)
-
-        except lightbulb.errors.ExtensionNotLoaded:
-            self.bot.load_extension(self.plugin_path + mod)
-            fields = self.reload_embed(mod)
-
-        else:
-            fields = self.reload_embed(mod)
-
-        finally:
-            for name, value, inline in fields:
-                embed.add_field(name=name, value=value, inline=inline)
-
-            await ctx.respond(embed=embed)
+        ```Args:\n
+            - ctx: Command context.\n
+            - module: Module to reload.```
+        """
+        pass
+        # TODO re-write this command
 
 
 def load(bot: lightbulb.Bot) -> None:
