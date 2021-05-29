@@ -119,6 +119,7 @@ class Bot(lightbulb.Bot):
 
         return "$"
 
+    #TODO Find a better way. guild_id may not be cached.
     async def _dm_commands(self, message: hikari.Message) -> bool:
         """Prevents commands invocations in DMs"""
         return message.guild_id
