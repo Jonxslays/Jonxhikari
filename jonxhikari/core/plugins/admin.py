@@ -1,3 +1,5 @@
+import typing as t
+
 import lightbulb
 import hikari
 
@@ -5,8 +7,33 @@ import hikari
 class Admin(lightbulb.Plugin):
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.bot = bot
-        self.plugin_path = "jonxhikari.bot.plugins."
+        self.plugin_path = "jonxhikari.core.plugins."
         super().__init__()
+
+    # Change or view the current guild prefix
+    @lightbulb.checks.has_guild_permissions(
+        hikari.Permissions.ADMINISTRATOR,
+        hikari.Permissions.MANAGE_GUILD,
+    )
+    @lightbulb.command(name="prefix")
+    async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
+        if not _prefix:
+            return await ctx.respond(f"The current prefix is `{self.bot.guilds[ctx.guild_id]['prefix']}`.")
+
+        if len(_prefix) > 3:
+            return await ctx.respond("The prefix can have a max of 3 characters.")
+
+        self.bot.guilds[ctx.guild_id]["prefix"] = _prefix
+        await self.bot.db.execute("UPDATE guilds SET Prefix = ? WHERE GuildID = ?", _prefix, ctx.guild_id)
+        await ctx.respond(f"Prefix successfully updated to: `{_prefix}`")
+
+    # Gracefully shuts down the bot
+    @lightbulb.checks.owner_only()
+    @lightbulb.command(name="shutdown")
+    async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
+        await ctx.message.delete()
+        await ctx.respond("Shutting down...")
+        await self.bot.close()
 
     # Returns output for the embed
     def reload_embed(self, mod: str, e: Exception = None) -> tuple:
@@ -24,26 +51,10 @@ class Admin(lightbulb.Plugin):
         )
 
     @lightbulb.checks.owner_only()
-    @lightbulb.command(name="shutdown")
-    async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
-        await ctx.message.delete()
-        await ctx.respond("Shutting down...")
-        await self.bot.close()
-
-    @lightbulb.checks.has_permissions(
-        hikari.Permissions.ADMINISTRATOR,
-        hikari.Permissions.MANAGE_GUILD,
-    )
-    @lightbulb.command(name="prefix")
-    async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: str) -> None:
-        if not _prefix:
-            await ctx.respond("You need a prefix")
-
     @lightbulb.command(name="reload")
     async def reload_cmd(self, ctx: lightbulb.Context, mod: str) -> None:
         if not mod:
-            await ctx.respond("Sorry you have to include a module to reload.")
-            return
+            return await ctx.respond("Sorry you have to include a module to reload.")
 
         embed = hikari.Embed()
 

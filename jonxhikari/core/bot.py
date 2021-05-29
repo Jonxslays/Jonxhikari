@@ -1,4 +1,5 @@
 import logging
+import time
 import typing as t
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
@@ -27,16 +28,20 @@ class Bot(lightbulb.Bot):
         self._plugins = [p.stem for p in Path(".").glob(f"{self._plugins_dir}/*.py")]
         self._dynamic = "./jonxhikari/data/dynamic"
         self._static = "./jonxhikari/data/static"
+
         self.version = version
+        self._invokes = 0
         self.guilds = {}
 
         self.scheduler = AsyncIOScheduler()
         self.session = ClientSession()
         self.errors = Errors()
         self.db = Database(self)
+
         self.logging_config()
         uvloop.install()
 
+        # Initiate hikari BotApp superclass
         super().__init__(
             token = Secrets.TOKEN,
             intents = hikari.Intents.ALL,
@@ -52,6 +57,7 @@ class Bot(lightbulb.Bot):
             hikari.StoppingEvent: self.on_stopping,
             hikari.GuildAvailableEvent: self.on_guild_available,
             lightbulb.CommandErrorEvent: self.on_cmd_exc,
+            lightbulb.CommandCompletionEvent: self.on_cmd,
         }
 
         # Subscribe to events
@@ -65,12 +71,12 @@ class Bot(lightbulb.Bot):
 
         trfh = TimedRotatingFileHandler(
             "./jonxhikari/data/logs/main.log",
-            when="D", interval=7, encoding="utf-8",
-            backupCount=14
+            when="D", interval=3, encoding="utf-8",
+            backupCount=10
         )
 
         ff = logging.Formatter(
-            "[%(asctime)s] %(levelname)s ||| %(message)s"
+            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] %(levelname)s ||| %(message)s"
         )
 
         trfh.setFormatter(ff)
@@ -111,6 +117,10 @@ class Bot(lightbulb.Bot):
         self.scheduler.shutdown()
         await self.session.close()
         await self.db.close()
+
+    # Fires on completion of a command.
+    async def on_cmd(self, event: lightbulb.CommandCompletionEvent) -> None:
+        self._invokes += 1
 
     # Handles Lightbulb command exception events
     async def on_cmd_exc(self, event: lightbulb.CommandErrorEvent) -> None:
