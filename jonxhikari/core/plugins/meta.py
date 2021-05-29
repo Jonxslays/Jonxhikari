@@ -4,7 +4,7 @@ import lightbulb
 import hikari
 
 
-class Metrics(lightbulb.Plugin):
+class Meta(lightbulb.Plugin):
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.bot = bot
         super().__init__()
@@ -17,8 +17,8 @@ class Metrics(lightbulb.Plugin):
 
 
 def load(bot: lightbulb.Bot) -> None:
-    bot.add_plugin(Metrics(bot))
+    bot.add_plugin(Meta(bot))
 
 
 def unload(bot: lightbulb.Bot) -> None:
-    bot.remove_plugin("Metrics")
+    bot.remove_plugin("Meta")
