@@ -2,6 +2,7 @@ import typing as t
 
 import lightbulb
 import hikari
+from lightbulb import errors
 
 
 class Admin(lightbulb.Plugin):
@@ -42,8 +43,34 @@ class Owner(lightbulb.Plugin):
 
     @lightbulb.owner_only()
     @lightbulb.command(name="load")
-    async def load_cmd(self, ctx: lightbulb.Context) -> None:
-        pass
+    async def load_cmd(self, ctx: lightbulb.Context, module: str) -> None:
+
+        embed = hikari.Embed()
+        mod_lower = module.lower()
+
+        try:
+            self.bot.load_extension(f"{self.plugin_path}{mod_lower}")
+
+        except errors.ExtensionAlreadyLoaded as e:
+            fields = (
+                ("Failed:", f'```{mod_lower}.py```', True),
+                ("Status:", f"```{e.__class__.__name__}```", True),
+                ("Info:", f"```{e.text}```", False),
+            )
+
+        else:
+            fields = (
+                ("Loaded:", f'```{mod_lower}.py```', True),
+                ("Status:", "```SuccessfulSync```", True),
+                ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
+            )
+
+        finally:
+            for name, value, inline in fields:
+                embed.add_field(name=name, value=value, inline=inline)
+
+            await ctx.respond(embed=embed)
+
 
     @lightbulb.owner_only()
     @lightbulb.command(name="unload")
