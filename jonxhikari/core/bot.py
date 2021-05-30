@@ -13,7 +13,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Secrets
 from jonxhikari.core.db import Database
-from jonxhikari.core.utils import Errors
+from jonxhikari.core.utils import Errors, Embeds
 
 
 class Bot(lightbulb.Bot):
@@ -30,6 +30,7 @@ class Bot(lightbulb.Bot):
         self.scheduler = AsyncIOScheduler()
         self.session = ClientSession()
         self.errors = Errors()
+        self.embeds = Embeds()
         self.db = Database(self)
 
         self.logging_config()

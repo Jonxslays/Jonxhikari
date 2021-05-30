@@ -1,3 +1,4 @@
+from jonxhikari.core.utils.embeds import Embeds
 import typing as t
 
 import lightbulb
@@ -6,6 +7,7 @@ from lightbulb import errors
 
 
 class Admin(lightbulb.Plugin):
+    """Dedicated to Admin only commands."""
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.bot = bot
         super().__init__()
@@ -16,11 +18,11 @@ class Admin(lightbulb.Plugin):
     )
     @lightbulb.command(name="prefix")
     async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
-        """Change or view my prefix in your server.
+        """View or change Jonxhikari's command prefix.
 
-        ```Args:\n
-            - ctx: Command context.\n
-            - prefix (optional): The new prefix you want. Defaults to None.```
+        Args:
+            ctx (lightbulb.Context): Command context.
+            _prefix (t.Optional[str], optional): New prefix. Defaults to None.
         """
 
         if not _prefix:
@@ -35,6 +37,7 @@ class Admin(lightbulb.Plugin):
 
 
 class Owner(lightbulb.Plugin):
+    """Dedicated to Owner only commands."""
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.bot = bot
         self.plugin_path = "jonxhikari.core.plugins."
@@ -44,51 +47,57 @@ class Owner(lightbulb.Plugin):
     @lightbulb.owner_only()
     @lightbulb.command(name="load")
     async def load_cmd(self, ctx: lightbulb.Context, module: str) -> None:
+        """Loads a Jonxhikari modules.
 
-        embed = hikari.Embed()
+        Args:
+            ctx (lightbulb.Context): Command context.
+            module (str): Module to be loaded.
+        """
+
         mod_lower = module.lower()
 
         try:
             self.bot.load_extension(f"{self.plugin_path}{mod_lower}")
 
         except errors.ExtensionAlreadyLoaded as e:
-            fields = (
+            fields = [
                 ("Failed:", f'```{mod_lower}.py```', True),
                 ("Status:", f"```{e.__class__.__name__}```", True),
                 ("Info:", f"```{e.text}```", False),
-            )
+            ]
 
         else:
-            fields = (
+            fields = [
                 ("Loaded:", f'```{mod_lower}.py```', True),
                 ("Status:", "```SuccessfulSync```", True),
                 ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
-            )
+            ]
 
         finally:
-            for name, value, inline in fields:
-                embed.add_field(name=name, value=value, inline=inline)
-
-            await ctx.respond(embed=embed)
+            await ctx.respond(
+                embed = self.bot.embeds.build(
+                    ctx = ctx, fields = fields,
+                )
+            )
 
 
     @lightbulb.owner_only()
     @lightbulb.command(name="unload")
     async def unload_cmd(self, ctx: lightbulb.Context) -> None:
-        pass
+        print("unload")
 
     @lightbulb.owner_only()
     @lightbulb.command(name="reload")
     async def reload_cmd(self, ctx: lightbulb.Context) -> None:
-        pass
+        print("reload")
 
     @lightbulb.owner_only()
     @lightbulb.command(name="shutdown")
     async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
         """Gracefully shuts down Jonxhikari.
 
-        ```Args:\n
-            - ctx: Command context.```
+        Args:
+            ctx: (lightbulb.Context): Command context.
         """
 
         await ctx.message.delete()
