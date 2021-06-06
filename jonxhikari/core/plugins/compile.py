@@ -5,7 +5,6 @@ import asyncio
 import lightbulb
 import hikari
 
-from pprint import pprint
 
 class Compile(lightbulb.Plugin):
     def __init__(self, bot: lightbulb.Bot) -> None:
