@@ -51,8 +51,8 @@ class Compile(lightbulb.Plugin):
             await ctx.respond("Wrong format. Use a code block. Specify lang inside first set of triple backticks.")
             return None
 
-        lang = matches.groups()[0]
-        source = matches.groups()[1]
+        lang = matches.group(1)
+        source = matches.group(2)
 
         if lang not in self.langs:
             await ctx.respond(f"{lang} is not a supported language.")
