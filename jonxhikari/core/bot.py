@@ -3,12 +3,10 @@ import time
 import typing as t
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from hikari.events.shard_events import ShardEvent
 
 import lightbulb
 import hikari
 import uvloop
-from aiohttp import ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Secrets
@@ -28,7 +26,6 @@ class Bot(lightbulb.Bot):
         self.guilds = {}
 
         self.scheduler = AsyncIOScheduler()
-        self.session = ClientSession()
         self.errors = Errors()
         self.embeds = Embeds()
         self.db = Database(self)
@@ -70,7 +67,8 @@ class Bot(lightbulb.Bot):
         )
 
         ff = logging.Formatter(
-            f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] %(levelname)s ||| %(message)s"
+            f"[%(asctime)s] %(levelname)s ||| %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
         )
 
         trfh.setFormatter(ff)
@@ -108,7 +106,6 @@ class Bot(lightbulb.Bot):
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""
         self.scheduler.shutdown()
-        await self.session.close()
         await self.db.close()
 
     async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:

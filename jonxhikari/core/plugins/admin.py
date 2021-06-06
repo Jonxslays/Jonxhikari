@@ -1,4 +1,3 @@
-import re
 import typing as t
 from hikari.presences import Status
 
@@ -87,7 +86,7 @@ class Owner(lightbulb.Plugin):
 
         await ctx.respond(
             embed = self.bot.embeds.build(
-                ctx = ctx, fields = fields,
+                ctx=ctx, fields=fields,
                 header="Loading..."
             )
         )
@@ -115,7 +114,7 @@ class Owner(lightbulb.Plugin):
 
         await ctx.respond(
             embed = self.bot.embeds.build(
-                ctx = ctx, fields = fields,
+                ctx=ctx, fields=fields,
                 header="Unloading..."
             )
         )
