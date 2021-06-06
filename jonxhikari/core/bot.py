@@ -41,7 +41,7 @@ class Bot(lightbulb.Bot):
             token = Secrets.TOKEN,
             owner_ids=[Secrets.OWNER_IDS],
             intents = hikari.Intents.ALL,
-            prefix = lightbulb.when_mentioned_or(self.grab_prefix),
+            prefix = lightbulb.when_mentioned_or(self.resolve_prefix),
             insensitive_commands = True,
             ignore_bots = True,
         )
@@ -111,7 +111,7 @@ class Bot(lightbulb.Bot):
         await self.session.close()
         await self.db.close()
 
-    async def grab_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
+    async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
         """Grabs a prefix to be used in a particular context"""
         if (_id := message.guild_id) in self.guilds:
             return self.guilds[_id]["prefix"]

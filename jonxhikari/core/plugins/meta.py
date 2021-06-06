@@ -11,15 +11,13 @@ class Meta(lightbulb.Plugin):
 
     @lightbulb.command(name="ping")
     async def ping_cmd(self, ctx: lightbulb.Context) -> None:
-        """Returns the bots ping, and response time.
-
-        ```Args:\n
-             - ctx: Context of the command.```
-        """
+        """Returns the bots gateway and rest latency."""
 
         start = time.time()
-        msg = await ctx.respond(f"**Latency**: {(latency := self.bot.heartbeat_latency * 1000):.0f} ms")
-        await msg.edit(f"**Latency**: {latency:.0f} ms\n**Response**: {((time.time() - start) * 1000):.0f} ms")
+        msg = await ctx.respond(f"init message")
+        end = time.time()
+
+        await msg.edit(f"**Gateway**: {self.bot.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms")
 
 
 def load(bot: lightbulb.Bot) -> None:

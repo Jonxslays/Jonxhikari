@@ -9,22 +9,12 @@ class Events(lightbulb.Plugin):
 
     @lightbulb.plugins.listener()
     async def on_cmd(self, _: lightbulb.CommandCompletionEvent) -> None:
-        """Fires on completion of a command
-
-        Args:
-             - event: CommandCompletionEvent
-        """
-
+        """Fires on completion of a command"""
         self.bot._invokes += 1
 
     @lightbulb.plugins.listener()
     async def on_cmd_exc(self, event: lightbulb.CommandErrorEvent) -> None:
-        """Handles Lightbulb command exception events.
-
-        ```Args:\n
-             - event: CommandErrorEvent.```
-        """
-
+        """Handles Lightbulb command exception events."""
         await self.bot.errors.parse(event.context, event.exception)
 
 

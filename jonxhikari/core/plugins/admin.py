@@ -18,12 +18,7 @@ class Admin(lightbulb.Plugin):
     )
     @lightbulb.command(name="prefix")
     async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
-        """View or change Jonxhikari's command prefix.
-
-        Args:
-            ctx (lightbulb.Context): Command context.
-            _prefix (t.Optional[str], optional): New prefix. Defaults to None.
-        """
+        """View or change Jonxhikari's command prefix."""
 
         if not _prefix:
             return await ctx.respond(f"The current prefix is `{self.bot.guilds[ctx.guild_id]['prefix']}`.")
@@ -47,12 +42,7 @@ class Owner(lightbulb.Plugin):
     @lightbulb.owner_only()
     @lightbulb.command(name="load")
     async def load_cmd(self, ctx: lightbulb.Context, module: str) -> None:
-        """Loads a Jonxhikari modules.
-
-        Args:
-            ctx (lightbulb.Context): Command context.
-            module (str): Module to be loaded.
-        """
+        """Loads a Jonxhikari module."""
 
         mod_lower = module.lower()
 
@@ -94,11 +84,7 @@ class Owner(lightbulb.Plugin):
     @lightbulb.owner_only()
     @lightbulb.command(name="shutdown")
     async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
-        """Gracefully shuts down Jonxhikari.
-
-        Args:
-            ctx: (lightbulb.Context): Command context.
-        """
+        """Gracefully shuts down Jonxhikari."""
 
         await ctx.message.delete()
         await ctx.respond("Shutting down...")
