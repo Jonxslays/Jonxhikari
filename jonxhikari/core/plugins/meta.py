@@ -17,7 +17,9 @@ class Meta(lightbulb.Plugin):
         msg = await ctx.respond(f"init message")
         end = time.time()
 
-        await msg.edit(f"**Gateway**: {self.bot.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms")
+        await msg.edit(
+            f"**Gateway**: {self.bot.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms"
+        )
 
 
 def load(bot: lightbulb.Bot) -> None:

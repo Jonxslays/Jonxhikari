@@ -40,15 +40,15 @@ class Owner(lightbulb.Plugin):
         super().__init__()
 
     @staticmethod
-    def _is_invalid(module: str, path: str) -> list:
+    def is_invalid(module: str) -> list:
         return [
             ("Extension:", f'```{module}.py```', True),
             ("Status:", f"```ExtensionNotFound```", True),
-            ("Info:", f"```{path} is not a valid extension.```", False),
+            ("Info:", f"```{module} is not a valid extension.```", False),
         ]
 
     @staticmethod
-    def _already_loaded(module: str, exc: errors.ExtensionError) -> list:
+    def failed_attempt(module: str, exc: errors.ExtensionError) -> list:
         return [
             ("Extension:", f'```{module}.py```', True),
             ("Status:", f"```{exc.__class__.__name__}```", True),
@@ -56,11 +56,11 @@ class Owner(lightbulb.Plugin):
         ]
 
     @staticmethod
-    def _success(module: str) -> list:
+    def success(module: str, action: str) -> list:
         return [
             ("Extension:", f'```{module}.py```', True),
             ("Status:", "```SuccessfulSync```", True),
-            ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
+            ("Info:", f"```{module} {action}```", False),
         ]
 
     @lightbulb.owner_only()
@@ -71,18 +71,19 @@ class Owner(lightbulb.Plugin):
         module = module.lower()
         path = self.plugin_path + module
 
-        if path not in self.bot.extensions:
-            fields = self._is_invalid(module, path)
+        if module not in self.bot._plugins:
+            fields = self.is_invalid(module)
 
         else:
             try:
                 self.bot.load_extension(path)
 
-            except errors.ExtensionAlreadyLoaded as e:
-                fields = self._already_loaded(module, e)
+            except errors.ExtensionAlreadyLoaded:
+                self.bot.reload_extension(path)
+                fields = self.success(module, "reloaded.\nlistening...")
 
             else:
-                fields = self._success(module)
+                fields = self.success(module, "loaded.\nlistening...")
 
         await ctx.respond(
             embed = self.bot.embeds.build(
@@ -93,13 +94,31 @@ class Owner(lightbulb.Plugin):
 
     @lightbulb.owner_only()
     @lightbulb.command(name="unload")
-    async def unload_cmd(self, ctx: lightbulb.Context) -> None:
-        print("unload")
+    async def unload_cmd(self, ctx: lightbulb.Context, module: str) -> None:
+        """Unloads a Jonxhikari module."""
 
-    @lightbulb.owner_only()
-    @lightbulb.command(name="reload")
-    async def reload_cmd(self, ctx: lightbulb.Context) -> None:
-        print("reload")
+        module = module.lower()
+        path = self.plugin_path + module
+
+        if path not in self.bot.extensions:
+            fields = self.is_invalid(module)
+
+        else:
+            try:
+                self.bot.unload_extension(path)
+
+            except errors.ExtensionNotLoaded as e:
+                fields = self.failed_attempt(module, e)
+
+            else:
+                fields = self.success(module, "unloaded.\nsleeping...")
+
+        await ctx.respond(
+            embed = self.bot.embeds.build(
+                ctx = ctx, fields = fields,
+                header="Unloading..."
+            )
+        )
 
     @lightbulb.owner_only()
     @lightbulb.command(name="shutdown")
