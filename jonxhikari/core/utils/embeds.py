@@ -4,11 +4,7 @@ import hikari
 
 
 class Embeds:
-    """Embed constructor class
-
-    functions:
-         - build: Constructs the embed.
-    """
+    """Embed constructor class."""
 
     def build(self, **kwargs) -> hikari.Embed:
         """Builds an embed from given kwargs.
@@ -63,7 +59,7 @@ class Embeds:
 
     def _extras(self) -> None:
         """Adds finals elements to the embed."""
-        self.embed.set_thumbnail(self.thumbnail or self._ctx.bot.me.avatar_url)
+        self.embed.set_thumbnail(self.thumbnail)
 
         self.embed.set_author(
             name = self.header or "Jonxhikari",

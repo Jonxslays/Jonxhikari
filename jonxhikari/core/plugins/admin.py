@@ -1,4 +1,3 @@
-from jonxhikari.core.utils.embeds import Embeds
 import typing as t
 
 import lightbulb
@@ -44,21 +43,29 @@ class Owner(lightbulb.Plugin):
     async def load_cmd(self, ctx: lightbulb.Context, module: str) -> None:
         """Loads a Jonxhikari module."""
 
-        mod_lower = module.lower()
+        module = module.lower()
+        path = self.plugin_path + module
+
+        if path not in self.bot.extensions:
+            fields = [
+                ("Failed:", f'```{module}.py```', True),
+                ("Status:", f"```ExtensionNotFound```", True),
+                ("Info:", f"```{path} is not a valid plugin path.```", False),
+            ]
 
         try:
-            self.bot.load_extension(f"{self.plugin_path}{mod_lower}")
+            self.bot.load_extension(f"{path}")
 
-        except errors.ExtensionAlreadyLoaded as e:
+        except (errors.ExtensionAlreadyLoaded) as e:
             fields = [
-                ("Failed:", f'```{mod_lower}.py```', True),
+                ("Failed:", f'```{module}.py```', True),
                 ("Status:", f"```{e.__class__.__name__}```", True),
                 ("Info:", f"```{e.text}```", False),
             ]
 
         else:
             fields = [
-                ("Loaded:", f'```{mod_lower}.py```', True),
+                ("Loaded:", f'```{module}.py```', True),
                 ("Status:", "```SuccessfulSync```", True),
                 ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
             ]
