@@ -1,4 +1,6 @@
+import re
 import typing as t
+from hikari.presences import Status
 
 import lightbulb
 import hikari
@@ -37,6 +39,29 @@ class Owner(lightbulb.Plugin):
         self.plugin_path = "jonxhikari.core.plugins."
         super().__init__()
 
+    @staticmethod
+    def _is_invalid(module: str, path: str) -> list:
+        return [
+            ("Extension:", f'```{module}.py```', True),
+            ("Status:", f"```ExtensionNotFound```", True),
+            ("Info:", f"```{path} is not a valid extension.```", False),
+        ]
+
+    @staticmethod
+    def _already_loaded(module: str, exc: errors.ExtensionError) -> list:
+        return [
+            ("Extension:", f'```{module}.py```', True),
+            ("Status:", f"```{exc.__class__.__name__}```", True),
+            ("Info:", f"```{exc.text}```", False),
+        ]
+
+    @staticmethod
+    def _success(module: str) -> list:
+        return [
+            ("Extension:", f'```{module}.py```', True),
+            ("Status:", "```SuccessfulSync```", True),
+            ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
+        ]
 
     @lightbulb.owner_only()
     @lightbulb.command(name="load")
@@ -47,36 +72,24 @@ class Owner(lightbulb.Plugin):
         path = self.plugin_path + module
 
         if path not in self.bot.extensions:
-            fields = [
-                ("Failed:", f'```{module}.py```', True),
-                ("Status:", f"```ExtensionNotFound```", True),
-                ("Info:", f"```{path} is not a valid plugin path.```", False),
-            ]
-
-        try:
-            self.bot.load_extension(f"{path}")
-
-        except (errors.ExtensionAlreadyLoaded) as e:
-            fields = [
-                ("Failed:", f'```{module}.py```', True),
-                ("Status:", f"```{e.__class__.__name__}```", True),
-                ("Info:", f"```{e.text}```", False),
-            ]
+            fields = self._is_invalid(module, path)
 
         else:
-            fields = [
-                ("Loaded:", f'```{module}.py```', True),
-                ("Status:", "```SuccessfulSync```", True),
-                ("Info:", "```Establishing connection..\nAwaiting tasks..```", False),
-            ]
+            try:
+                self.bot.load_extension(path)
 
-        finally:
-            await ctx.respond(
-                embed = self.bot.embeds.build(
-                    ctx = ctx, fields = fields,
-                )
+            except errors.ExtensionAlreadyLoaded as e:
+                fields = self._already_loaded(module, e)
+
+            else:
+                fields = self._success(module)
+
+        await ctx.respond(
+            embed = self.bot.embeds.build(
+                ctx = ctx, fields = fields,
+                header="Loading..."
             )
-
+        )
 
     @lightbulb.owner_only()
     @lightbulb.command(name="unload")
