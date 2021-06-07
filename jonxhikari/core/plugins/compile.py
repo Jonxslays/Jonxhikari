@@ -10,12 +10,11 @@ class Compile(lightbulb.Plugin):
     def __init__(self, bot: lightbulb.Bot) -> None:
         super().__init__()
         self.bot = bot
-        self.langs = []
+        self.langs: list[str] = []
         self.uri = "https://emkc.org/api/v2/piston"
 
     async def get_langs(self) -> None:
         """Gets available language details from Piston api."""
-
         uri = self.uri + "/runtimes"
 
         async with aiohttp.ClientSession() as session:
@@ -30,9 +29,8 @@ class Compile(lightbulb.Plugin):
             *(self.resolve_lang(lang) for lang in data)
         )
 
-    async def resolve_lang(self, data: dict) -> None:
+    async def resolve_lang(self, data: dict[str, str]) -> None:
         """Saves raw language data to memory."""
-
         self.langs.append(data["language"])
 
         for a in data["aliases"]:
@@ -41,7 +39,6 @@ class Compile(lightbulb.Plugin):
     @lightbulb.command(name="run")
     async def run_cmd(self, ctx: lightbulb.Context, *, code: str) -> None:
         """Sends code to the Piston api to be executed."""
-
         uri = self.uri + "/execute"
 
         if not self.langs:

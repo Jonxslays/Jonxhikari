@@ -12,7 +12,6 @@ class Meta(lightbulb.Plugin):
     @lightbulb.command(name="ping")
     async def ping_cmd(self, ctx: lightbulb.Context) -> None:
         """Returns the bots gateway and rest latency."""
-
         start = time.time()
         msg = await ctx.respond(f"init message")
         end = time.time()

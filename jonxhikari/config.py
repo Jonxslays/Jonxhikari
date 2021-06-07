@@ -1,4 +1,5 @@
-import typing
+from __future__ import annotations
+import typing as t
 from os import environ
 from pathlib import Path
 
@@ -8,9 +9,10 @@ import dotenv
 dotenv.load_dotenv()
 
 
-class ConfigMeta(type):
-    def resolve_value(cls, value: str):
-        _map: typing.Dict[str, typing.Callable] = {
+class SecretsMeta(type):
+
+    def resolve_value(cls, value: str) -> t.Callable[..., t.Any] | t.Any:
+        _map: dict[str, t.Callable[..., t.Any]] = {
             "bool": bool,
             "int": int,
             "float": float,
@@ -21,21 +23,21 @@ class ConfigMeta(type):
 
         return _map[(v := value.split(":", maxsplit=1))[0]](v[1])
 
-    def resolve_key(cls, key: str):
+    def resolve_key(cls, key: str) -> t.Callable[..., t.Any]:
         try:
             return cls.resolve_key(environ[key])
         except:
             return cls.resolve_value(key)
 
-    def __getattr__(cls, name):
+    def __getattr__(cls, name: str) -> t.Callable[..., t.Any]:
         try:
             return cls.resolve_key(name)
         except KeyError:
             raise AttributeError(f"{name} is not a key in config.") from None
 
-    def __getitem__(cls, name):
+    def __getitem__(cls, name: str) -> t.Callable[..., t.Any]:
         return cls.__getattr__(name)
 
 
-class Secrets(metaclass=ConfigMeta):
+class Secrets(metaclass=SecretsMeta):
     pass

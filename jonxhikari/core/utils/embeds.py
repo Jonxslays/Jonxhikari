@@ -1,12 +1,14 @@
 import datetime
+import typing as t
 
+import lightbulb
 import hikari
 
 
 class Embeds:
     """Embed constructor class."""
 
-    def build(self, **kwargs) -> hikari.Embed:
+    def build(self, **kwargs: t.Any) -> hikari.Embed:
         """Builds an embed from given kwargs.
 
         kwargs:
@@ -24,26 +26,25 @@ class Embeds:
         Returns:
              - hikari.Embed
         """
+        self.fields: t.Optional[list[tuple[str, str, bool]]] = kwargs.get("fields")
+        self._ctx: lightbulb.Context = kwargs.get("ctx")
+        self.title: t.Optional[str] = kwargs.get("title")
+        self.desc: t.Optional[str] = kwargs.get("description")
+        self.footer: t.Optional[str] = kwargs.get("footer")
+        self.header: t.Optional[str] = kwargs.get("header")
+        self.header_icon: t.Any = kwargs.get("header_icon")
+        self.thumbnail: t.Any = kwargs.get("thumbnail")
+        self.image: t.Any = kwargs.get("image")
+        self.color: t.Any = kwargs.get("color")
+        self.time: datetime.datetime = datetime.datetime.now().astimezone()
 
-        self.fields = kwargs.get("fields")
-        self._ctx = kwargs.get("ctx")
-        self.title = kwargs.get("title")
-        self.desc = kwargs.get("description")
-        self.footer = kwargs.get("footer")
-        self.header = kwargs.get("header")
-        self.header_icon = kwargs.get("header_icon")
-        self.thumbnail = kwargs.get("thumbnail")
-        self.image = kwargs.get("image")
-        self.color = kwargs.get("color")
-        self.time = datetime.datetime.now().astimezone()
-
-        self._prime()
-        self._plus_fields()
-        self._extras()
+        self.prime()
+        self.plus_fields()
+        self.extras()
 
         return self.embed
 
-    def _prime(self) -> None:
+    def prime(self) -> None:
         """Generates inital embed."""
         self.embed = hikari.Embed(
             title = self.title,
@@ -52,12 +53,13 @@ class Embeds:
             color = self.color or hikari.Color.from_hex_code("#713dc7")
         )
 
-    def _plus_fields(self) -> None:
+    def plus_fields(self) -> None:
         """Adds fields to the embed"""
-        for name, value, inline in self.fields:
-            self.embed.add_field(name=name, value=value, inline=inline)
+        if self.fields:
+            for name, value, inline in self.fields:
+                self.embed.add_field(name=name, value=value, inline=inline)
 
-    def _extras(self) -> None:
+    def extras(self) -> None:
         """Adds finals elements to the embed."""
         self.embed.set_thumbnail(self.thumbnail)
 

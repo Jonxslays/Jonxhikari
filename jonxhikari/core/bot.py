@@ -1,6 +1,5 @@
+from __future__ import annotations
 import logging
-import time
-import typing as t
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -23,7 +22,7 @@ class Bot(lightbulb.Bot):
 
         self.version = version
         self._invokes = 0
-        self.guilds = {}
+        self.guilds: dict[int, dict[str, str]] = {}
 
         self.scheduler = AsyncIOScheduler()
         self.errors = Errors()
@@ -108,7 +107,7 @@ class Bot(lightbulb.Bot):
         self.scheduler.shutdown()
         await self.db.close()
 
-    async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
+    async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str | int | None:
         """Grabs a prefix to be used in a particular context"""
         if (_id := message.guild_id) in self.guilds:
             return self.guilds[_id]["prefix"]
@@ -121,4 +120,4 @@ class Bot(lightbulb.Bot):
     #TODO Find a better way. guild_id may not be cached.
     async def _dm_commands(self, message: hikari.Message) -> bool:
         """Prevents commands invocations in DMs"""
-        return message.guild_id
+        return message.guild_id is not None
