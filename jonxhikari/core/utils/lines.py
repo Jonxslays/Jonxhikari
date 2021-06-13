@@ -6,7 +6,6 @@ from pygount import ProjectSummary, SourceAnalysis
 class Lines:
     """Analyzes the bots source code."""
     def __init__(self) -> None:
-        self.data = ProjectSummary()
         self.py = [str(p) for p in Path(".").glob("jonxhikari/**/*.py")]
         self.sql = [str(p) for p in Path(".").glob("jonxhikari/**/*.sql")]
         self.targets = self.py + self.sql
@@ -23,13 +22,16 @@ class Lines:
 
     def count(self):
         """Counts the code in each file."""
+        data = ProjectSummary()
+
         for file in self.targets:
             analysis = SourceAnalysis.from_file(file, "pygount")
-            self.data.add(analysis)
+            data.add(analysis)
 
-        self.code = self.data.total_code_count + self.data.total_string_count
-        self.docs = self.data.total_documentation_count
-        self.blank = self.data.total_empty_count
-        self.total = self.data.total_line_count
+        self.code = data.total_code_count + data.total_string_count
+        self.docs = data.total_documentation_count
+        self.blank = data.total_empty_count
+        self.total = data.total_line_count
 
         del analysis
+        del data

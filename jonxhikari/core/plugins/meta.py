@@ -56,7 +56,13 @@ class Meta(lightbulb.Plugin):
             ("Lines of code", f"```{self.lines.total:,}```", True),
             ("Latency", f"```{self.bot.heartbeat_latency * 1000:,.0f} ms```", True),
             ("Platform", f"```{distro_[0].title()} {distro_[1]}```", True),
-            ("Code breakdown", f"```| {code_p:>5.2f}% | Code  -> {self.lines.code:>6} |\n| {docs_p:>5.2f}% | Docs  -> {self.lines.docs:>6} |\n| {blank_p:>5.2f}% | Blank -> {self.lines.blank:>6} |```", False),
+            ("Code breakdown",
+                f"```| {code_p:>5.2f}% | valid code  -> {self.lines.code:>6} |\n" +
+                f"| {docs_p:>5.2f}% | docstrings  -> {self.lines.docs:>6} |\n" +
+                f"| {blank_p:>5.2f}% | blank lines -> {self.lines.blank:>6} |\n```", False),
+            ("Files by language",
+                f"```| {len(self.lines.py) / len(self.lines) * 100:>5.2f}% | .py files   -> {len(self.lines.py):>6} |\n" +
+                f"| {len(self.lines.sql) / len(self.lines) * 100:>5.2f}% | .sql files  -> {len(self.lines.sql):>6} |```", False),
             ("Memory usage", f"```| {mem_of_total:>5,.2f}% | {mem_usage:,.0f} MiB / {(mem_total / 1024):,.0f} GiB |```", False),
             ("Uptime", f"```{uptime}```", True),
             ("CPU time", f"```{cpu_time}```", True)
