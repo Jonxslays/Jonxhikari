@@ -63,7 +63,7 @@ class Meta(lightbulb.Plugin):
             ("Files by language",
                 f"```| {len(self.lines.py) / len(self.lines) * 100:>5.2f}% | .py files   -> {len(self.lines.py):>6} |\n" +
                 f"| {len(self.lines.sql) / len(self.lines) * 100:>5.2f}% | .sql files  -> {len(self.lines.sql):>6} |```", False),
-            ("Memory usage", f"```| {mem_of_total:>5,.2f}% | {mem_usage:,.0f} MiB / {(mem_total / 1024):,.0f} GiB |```", False),
+            ("Memory usage", f"```| {mem_of_total:>5,.2f}% | {mem_usage:,.0f} MiB  /  {(mem_total):,.0f} MiB |```", False),
             ("Uptime", f"```{uptime}```", True),
             ("CPU time", f"```{cpu_time}```", True)
         ]
