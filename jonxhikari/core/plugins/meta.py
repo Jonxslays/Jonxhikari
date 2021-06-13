@@ -13,11 +13,12 @@ class Meta(lightbulb.Plugin):
     async def ping_cmd(self, ctx: lightbulb.Context) -> None:
         """Returns the bots gateway and rest latency."""
         start = time.time()
-        msg = await ctx.respond(f"init message")
+        msg = await ctx.respond(f"uwu-owo")
         end = time.time()
 
         await msg.edit(
-            f"**Gateway**: {self.bot.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms"
+            f"**Gateway**: {self.bot.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms",
+            reply=True
         )
 
 
