@@ -45,14 +45,18 @@ class Compile(lightbulb.Plugin):
             await self.get_langs()
 
         if not (matches := re.match("```(\w+)\s([\w\W]+)[\s*]?```", code)):
-            await ctx.respond("Wrong format. Use a code block. Specify lang inside first set of triple backticks.")
+            output = f"{await self.bot.resolve_prefix(self.bot, ctx.message)}run \`\`\`python\nprint('This is a test')\`\`\`"
+            await ctx.respond(
+                f"Wrong format. Use a code block.\nSpecify lang inside first set of triple backticks. Example:\n\n{output}",
+                reply=True
+            )
             return None
 
         lang = matches.group(1)
         source = matches.group(2)
 
         if lang not in self.langs:
-            await ctx.respond(f"{lang} is not a supported language.")
+            await ctx.respond(f"{lang} is not a supported language.", reply=True)
             return None
 
         data = {
@@ -94,7 +98,8 @@ class Compile(lightbulb.Plugin):
             embed = self.bot.embeds.build(
                 ctx=ctx, fields=fields, color=color,
                 header="Source code evaluation results"
-            )
+            ),
+            reply=True
         )
 
 

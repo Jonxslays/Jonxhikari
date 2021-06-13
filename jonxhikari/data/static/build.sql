@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS guilds (
 CREATE TABLE IF NOT EXISTS tags (
     TagID integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     GuildID integer, TagOwner integer,
-    TagName text, TagContent text
+    TagName text, TagContent text,
+    Uses integer
 );
