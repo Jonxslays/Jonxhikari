@@ -37,7 +37,7 @@ class Meta(lightbulb.Plugin):
 
         proc = Process()
         with proc.oneshot():
-            uptime = str(timedelta(seconds=time() - proc.create_time()))
+            uptime = (timedelta(seconds=time() - proc.create_time()))
             cpu_time = str(timedelta(seconds=(cpu := proc.cpu_times()).system + cpu.user))
             mem_total = virtual_memory().total / (1024 ** 2)
             mem_of_total = proc.memory_percent()
@@ -45,6 +45,8 @@ class Meta(lightbulb.Plugin):
 
         distro_ = distro.linux_distribution(full_distribution_name=False)
         code_p, docs_p, blank_p = self.lines.grab_percents()
+
+        print(self.bot.db._calls / uptime.total_seconds())
 
         fields = [
             ("Jonxhikari", f"```{self.bot.version}```", True),
@@ -57,15 +59,16 @@ class Meta(lightbulb.Plugin):
             ("Latency", f"```{self.bot.heartbeat_latency * 1000:,.0f} ms```", True),
             ("Platform", f"```{distro_[0].title()} {distro_[1]}```", True),
             ("Code breakdown",
-                f"```| {code_p:>5.2f}% | valid code  -> {self.lines.code:>6} |\n" +
+                f"```| {code_p:>5.2f}% | code lines  -> {self.lines.code:>6} |\n" +
                 f"| {docs_p:>5.2f}% | docstrings  -> {self.lines.docs:>6} |\n" +
                 f"| {blank_p:>5.2f}% | blank lines -> {self.lines.blank:>6} |\n```", False),
             ("Files by language",
                 f"```| {len(self.lines.py) / len(self.lines) * 100:>5.2f}% | .py files   -> {len(self.lines.py):>6} |\n" +
                 f"| {len(self.lines.sql) / len(self.lines) * 100:>5.2f}% | .sql files  -> {len(self.lines.sql):>6} |```", False),
             ("Memory usage", f"```| {mem_of_total:>5,.2f}% | {mem_usage:,.0f} MiB  /  {(mem_total):,.0f} MiB |```", False),
-            ("Uptime", f"```{uptime}```", True),
-            ("CPU time", f"```{cpu_time}```", True)
+            ("Uptime", f"```{str(uptime)}```", True),
+            ("CPU time", f"```{cpu_time}```", True),
+            ("Database calls since uptime", f"```{self.bot.db._calls:,} ({self.bot.db._calls / uptime.total_seconds():,.6f} / second)```", False)
         ]
 
         await ctx.respond(
