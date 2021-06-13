@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Secrets
 from jonxhikari.core.db import Database
-from jonxhikari.core.utils import Errors, Embeds
+from jonxhikari.core.utils import Embeds, Errors
 
 
 class Bot(lightbulb.Bot):

@@ -4,6 +4,7 @@ import time
 
 
 class Misc(lightbulb.Plugin):
+    """Items not fitting in elsewhere."""
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.bot = bot
         super().__init__()

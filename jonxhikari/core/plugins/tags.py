@@ -5,6 +5,7 @@ import hikari
 
 
 class Tags(lightbulb.Plugin):
+    """Handles Jonxhikari's tag system"""
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.reserved = ("create", "delete", "info", "transfer", "edit")
         self.bot = bot

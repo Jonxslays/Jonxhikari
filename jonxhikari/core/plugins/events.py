@@ -3,6 +3,7 @@ import hikari
 
 
 class Events(lightbulb.Plugin):
+    """Jonxhikaris pseudo event handler."""
     def __init__(self, bot: lightbulb.Bot) -> None:
         self.bot = bot
         super().__init__()

@@ -7,6 +7,7 @@ import hikari
 
 
 class Compile(lightbulb.Plugin):
+    """Runs code through the Piston api."""
     def __init__(self, bot: lightbulb.Bot) -> None:
         super().__init__()
         self.bot = bot

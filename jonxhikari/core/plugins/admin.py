@@ -1,5 +1,4 @@
 import typing as t
-from hikari.presences import Status
 
 import lightbulb
 import hikari
