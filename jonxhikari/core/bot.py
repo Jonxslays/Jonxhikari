@@ -55,7 +55,7 @@ class Bot(lightbulb.Bot):
             self.event_manager.subscribe(key, subscriptions[key])
 
     def logging_config(self) -> None:
-        """Logs to a file that rotates weekly"""
+        """Logs to a file that rotates every 3 days"""
         self.log = logging.getLogger("root")
         self.log.setLevel(logging.INFO)
 

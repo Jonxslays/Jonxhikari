@@ -44,7 +44,7 @@ class Compile(lightbulb.Plugin):
         if not self.langs:
             await self.get_langs()
 
-        if not (matches := re.match("\`\`\`(\w+)\s([\w\W]+)[\s*]?\`\`\`", code)):
+        if not (matches := re.match("```(\w+)\s([\w\W]+)[\s*]?```", code)):
             await ctx.respond("Wrong format. Use a code block. Specify lang inside first set of triple backticks.")
             return None
 
