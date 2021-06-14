@@ -31,7 +31,7 @@ class Meta(lightbulb.Plugin):
 
     @lightbulb.command(name="stats")
     async def stats_cmd(self, ctx: lightbulb.Context) -> None:
-        """Displays system info for Jonxhikari"""
+        """Displays system info for Jonxhikari."""
         await ctx.message.delete()
         self.lines.count()
 

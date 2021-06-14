@@ -16,7 +16,7 @@ class Events(lightbulb.Plugin):
     @lightbulb.plugins.listener()
     async def on_cmd_exc(self, event: lightbulb.CommandErrorEvent) -> None:
         """Handles Lightbulb command exception events."""
-        await self.bot.errors.parse(event.context, event.exception)
+        await self.bot.errors.parse(event.exception, event.context)
 
 
 def load(bot: lightbulb.Bot) -> None:
