@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+from typing import Union
 
 import lightbulb
 import hikari
@@ -22,7 +23,7 @@ class Bot(lightbulb.Bot):
 
         self.version = version
         self._invokes = 0
-        self.guilds: dict[int, dict[str, str]] = {}
+        self.guilds: dict[int, dict[str, Union[int, str]]] = {}
 
         self.scheduler = AsyncIOScheduler()
         self.errors = Errors()
