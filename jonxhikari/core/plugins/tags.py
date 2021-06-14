@@ -56,14 +56,14 @@ class Tags(lightbulb.Plugin):
         """Command for editing a tag you own."""
         name = name.lower()
 
-        if owner := await self.bot.db.record(
+        if owner := await self.bot.db.field(
             "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?",
             ctx.guild_id, name
         ):
             # A successful edit
             if owner == ctx.author.id:
                 await self.bot.db.execute(
-                    "UPDATE tags SET TagContent = ? WHERE TagName = ? and GuildID = ?",
+                    "UPDATE tags SET TagContent = ? WHERE TagName = ? AND GuildID = ?",
                     content, name, ctx.guild_id
                 )
                 await ctx.respond(f"**SUCCESS**\n`{name}` tag edited by {ctx.author.mention}.", reply=True)
