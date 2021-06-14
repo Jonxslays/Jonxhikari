@@ -1,3 +1,4 @@
+import asyncio
 import typing as t
 
 import lightbulb
@@ -7,7 +8,7 @@ import hikari
 class Tags(lightbulb.Plugin):
     """Handles Jonxhikari's tag system"""
     def __init__(self, bot: lightbulb.Bot) -> None:
-        self.reserved = ("create", "delete", "edit", "info", "transfer")
+        self.reserved = ("create", "delete", "edit", "info", "list", "transfer")
         self.bot = bot
         super().__init__()
 
@@ -53,7 +54,60 @@ class Tags(lightbulb.Plugin):
     @tag_group.command(name="edit")
     async def tag_edit_cmd(self, ctx: lightbulb.Context, name: str, *, content: str) -> None:
         """Command for editing a tag you own."""
-        await ctx.respond("subcommand edit is not yet implemented.")
+        name = name.lower()
+
+        if owner := await self.bot.db.record(
+            "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?",
+            ctx.guild_id, name
+        ):
+            # A successful edit
+            if owner == ctx.author.id:
+                await self.bot.db.execute(
+                    "UPDATE tags SET TagContent = ? WHERE TagName = ? and GuildID = ?",
+                    content, name, ctx.guild_id
+                )
+                await ctx.respond(f"**SUCCESS**\n`{name}` tag edited by {ctx.author.mention}.", reply=True)
+                return None
+
+            # Author doesn't own the tag
+            await ctx.respond(
+                f"**FAILED**\n{self.bot.cache.get_member(ctx.guild_id, owner)} owns the `{name}` tag, not you."
+            )
+            return None
+
+        # Define emojis
+        yes = ":yes:853792470651502603"
+        no = ":no:853792496118267954"
+
+        # There is no tag, do they want to make one?
+        msg = await ctx.respond(f"**FAILED**\nNo `{name}` tag has been created yet.\nWould you like to create it now?")
+        await msg.add_reaction(yes)
+        await msg.add_reaction(no)
+
+        def check(e: hikari.ReactionAddEvent) -> bool:
+            return e.message_id == msg.id and e.user_id == ctx.author.id and str(e.emoji) in ("yes", "no")
+
+        try:
+            e = await self.bot.wait_for(hikari.ReactionAddEvent, 30, check)
+
+        except asyncio.TimeoutError:
+            await msg.edit(content=f"**FAILED**\nNo `{name}` tag has been created yet.")
+            await msg.remove_all_reactions()
+
+        else:
+            # They don't want to make a new tag
+            if str(e.emoji) == "no":
+                await msg.edit(content=f"**FAILED**\nNo `{name}` tag has been created yet.")
+                await msg.remove_all_reactions()
+
+            # They do want to make a new tag
+            elif str(e.emoji) == "yes":
+                await self.bot.db.execute(
+                    "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES (?, ?, ?, ?)",
+                    ctx.guild_id, ctx.author.id, name, content
+                )
+                await msg.edit(content=f"**SUCCESS**\n`{name}` tag created by {ctx.author.mention}.", user_mentions=False)
+                await msg.remove_all_reactions()
 
     @tag_group.command(name="transfer")
     async def tag_transfer_cmd(self, ctx: lightbulb.Context, name: str, member: hikari.Member) -> None:
