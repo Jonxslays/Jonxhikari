@@ -46,8 +46,6 @@ class Meta(lightbulb.Plugin):
         distro_ = distro.linux_distribution(full_distribution_name=False)
         code_p, docs_p, blank_p = self.lines.grab_percents()
 
-        print(self.bot.db._calls / uptime.total_seconds())
-
         fields = [
             ("Jonxhikari", f"```{self.bot.version}```", True),
             ("Python", f"```{python_version()}```", True),
