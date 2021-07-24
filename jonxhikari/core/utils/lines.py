@@ -32,6 +32,3 @@ class Lines:
         self.docs = data.total_documentation_count
         self.blank = data.total_empty_count
         self.total = data.total_line_count
-
-        del analysis
-        del data

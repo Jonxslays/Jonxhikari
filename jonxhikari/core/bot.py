@@ -110,8 +110,8 @@ class Bot(lightbulb.Bot):
 
     async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str | int | None:
         """Grabs a prefix to be used in a particular context"""
-        if (_id := message.guild_id) in self.guilds:
-            return self.guilds[_id]["prefix"]
+        if (id_ := message.guild_id) in self.guilds:
+            return self.guilds[id_]["prefix"]
 
         if await self._dm_commands(message):
             return await self.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", _id)
@@ -120,5 +120,5 @@ class Bot(lightbulb.Bot):
 
     #TODO Find a better way. guild_id may not be cached.
     async def _dm_commands(self, message: hikari.Message) -> bool:
-        """Prevents commands invocations in DMs"""
+        """Checks if command was invoked in DMs"""
         return message.guild_id is not None

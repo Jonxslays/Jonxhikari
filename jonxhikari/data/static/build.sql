@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS tags (
 CREATE TABLE IF NOT EXISTS starboard (
     BaseMessageID integer,
     GuildID integer,
-    StartMessageID integer,
+    StarMessageID integer,
     Stars integer DEFAULT 1,
+	FOREIGN KEY (GuildID) REFERENCES guilds(GuildID),
     PRIMARY KEY (BaseMessageID, GuildID)
 );
