@@ -32,6 +32,10 @@ class Events(lightbulb.Plugin):
     async def on_reaction_add(self, event: hikari.ReactionAddEvent) -> None:
         stars = ("⭐")
 
+        ####################################################
+        # THIS IS NOT A WORKING STARBOARD IMPL, DONT COPY IT
+        ####################################################
+
         if event.emoji in stars:
             stars.pop(event.emoji.name)
             if not (user := self.bot.cache.get_user(event.user_id)):
