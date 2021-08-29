@@ -9,7 +9,7 @@ import hikari
 import uvloop
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from jonxhikari import Secrets
+from jonxhikari import Config
 from jonxhikari.core.db import Database
 from jonxhikari.core.utils import Embeds, Errors
 
@@ -35,8 +35,8 @@ class Bot(lightbulb.Bot):
 
         # Initiate hikari BotApp superclass
         super().__init__(
-            token = Secrets.TOKEN,
-            owner_ids=[Secrets.OWNER_IDS],
+            token = Config.get("TOKEN"),
+            owner_ids=Config.get("OWNER_IDS"),
             intents = hikari.Intents.ALL,
             prefix = lightbulb.when_mentioned_or(self.resolve_prefix),
             insensitive_commands = True,

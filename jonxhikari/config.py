@@ -1,7 +1,5 @@
 from __future__ import annotations
-import typing as t
 from os import environ
-from pathlib import Path
 
 import dotenv
 
@@ -9,35 +7,35 @@ import dotenv
 dotenv.load_dotenv()
 
 
-class SecretsMeta(type):
-
-    def resolve_value(cls, value: str) -> t.Callable[..., t.Any] | t.Any:
-        _map: dict[str, t.Callable[..., t.Any]] = {
-            "bool": bool,
-            "int": int,
-            "float": float,
-            "file": lambda x: Path(x).read_text().strip("\n"),
-            "str": str,
-            "set": lambda x: set([cls.resolve_value(e.strip()) for e in x.split(",")]),
-        }
-
-        return _map[(v := value.split(":", maxsplit=1))[0]](v[1])
-
-    def resolve_key(cls, key: str) -> t.Callable[..., t.Any]:
+class Config:
+    """Gets environment variables from a `.env` file."""
+    @classmethod
+    def get(cls, var: str) -> str | int | bool:
         try:
-            return cls.resolve_key(environ[key])
-        except:
-            return cls.resolve_value(key)
+            t, v = environ[var].split(":", maxsplit=1)
 
-    def __getattr__(cls, name: str) -> t.Callable[..., t.Any]:
-        try:
-            return cls.resolve_key(name)
+            if t == "str":
+                return str(v)
+
+            if t == "int":
+                return int(v)
+
+            if t == "bool":
+                _v = {
+                    "True": True,
+                    "true": True,
+                    "False": False,
+                    "false": False,
+                }
+
+                if v not in _v.keys():
+                    raise LookupError(
+                        f"`{var}` is using an invalid boolean value in config."
+                    )
+
+                return _v[v]
+
         except KeyError:
-            raise AttributeError(f"{name} is not a key in config.") from None
+            raise LookupError(f"`{var}` is not defined in config.") from None
 
-    def __getitem__(cls, name: str) -> t.Callable[..., t.Any]:
-        return cls.__getattr__(name)
-
-
-class Secrets(metaclass=SecretsMeta):
-    pass
+        raise LookupError(f"`{var}` has an invalid type in config.")
