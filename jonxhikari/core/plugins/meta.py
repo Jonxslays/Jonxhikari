@@ -31,8 +31,7 @@ class Meta(lightbulb.Plugin):
 
     @lightbulb.command(name="stats")
     async def stats_cmd(self, ctx: lightbulb.Context) -> None:
-        """Displays system info for Jonxhikari."""
-        await ctx.message.delete()
+        """Displays system info for Jxhk."""
         self.lines.count()
 
         proc = Process()
@@ -47,7 +46,7 @@ class Meta(lightbulb.Plugin):
         code_p, docs_p, blank_p = self.lines.grab_percents()
 
         fields = [
-            ("Jonxhikari", f"```{self.bot.version}```", True),
+            ("Jxhk", f"```{self.bot.version}```", True),
             ("Python", f"```{python_version()}```", True),
             ("Hikari", f"```{hikari.__version__}```", True),
             ("Users here", f"```{len(self.bot.cache.get_members_view_for_guild(ctx.guild_id)):,}```", True),
@@ -64,15 +63,15 @@ class Meta(lightbulb.Plugin):
                 f"```| {len(self.lines.py) / len(self.lines) * 100:>5.2f}% | .py files   -> {len(self.lines.py):>6} |\n" +
                 f"| {len(self.lines.sql) / len(self.lines) * 100:>5.2f}% | .sql files  -> {len(self.lines.sql):>6} |```", False),
             ("Memory usage", f"```| {mem_of_total:>5,.2f}% | {mem_usage:,.0f} MiB  /  {(mem_total):,.0f} MiB |```", False),
-            ("Uptime", f"```{str(uptime)}```", True),
-            ("CPU time", f"```{cpu_time}```", True),
-            ("Database calls since uptime", f"```{self.bot.db._calls:,} ({self.bot.db._calls / uptime.total_seconds():,.6f} / second)```", False)
+            ("Uptime", f"```{str(uptime)[:-4]}```", True),
+            ("CPU time", f"```{cpu_time[:-4]}```", True),
+            ("Database calls since uptime", f"```{self.bot.db._calls:,} ({self.bot.db._calls / (uptime.total_seconds() / 60):,.6f} / minute)```", False)
         ]
 
         await ctx.respond(
             embed=self.bot.embeds.build(
                 ctx=ctx, header=" ", title="System stats",
-                thumbnail=self.bot.me.avatar_url,
+                thumbnail=self.bot.get_me().avatar_url,
                 fields=fields
             ),
         )

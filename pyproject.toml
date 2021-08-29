@@ -6,12 +6,12 @@ authors = ["Jonxslays"]
 license = "BSD-3-Clause"
 
 [tool.poetry.dependencies]
-python = ">=3.8.0,<3.10"
+python = ">=3.9.0,<3.10"
 aiohttp = "3.7.4.post0"
 aiosqlite = "0.17.0"
 APScheduler = "3.7.0"
 distro = "1.5.0"
-hikari = "2.0.0.dev101"
+hikari = {version = "2.0.0.dev101", extras = ["speedups"]}
 hikari-lightbulb = "1.0.1"
 mypy = "0.812"
 mypy-extensions = "0.4.3"
@@ -19,6 +19,7 @@ psutil = "5.8.0"
 pygount = "1.2.4"
 python-dotenv = "0.17.1"
 uvloop = "0.15.2"
+hikari-tanjun = {git = "https://github.com/FasterSpeeding/Tanjun", rev = "task/components"}
 
 [tool.poetry.dev-dependencies]
 black = "^21.7b0"

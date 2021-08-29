@@ -5,7 +5,6 @@ from typing import Union
 import aiohttp
 import lightbulb
 import hikari
-import uvloop
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Config
@@ -16,7 +15,9 @@ from jonxhikari.core.utils import Embeds, Errors
 class Bot(lightbulb.Bot):
     def __init__(self, version: str) -> None:
         self._plugins_dir = "./jonxhikari/core/plugins"
+        self._modules_dir = "./jonxhikari/core/modules"
         self._plugins = [p.stem for p in Path(".").glob(f"{self._plugins_dir}/*.py")]
+        self._modules = [p.stem for p in Path(".").glob(f"{self._modules_dir}/*.py")]
         self._dynamic = "./jonxhikari/data/dynamic"
         self._static = "./jonxhikari/data/static"
 
@@ -30,12 +31,9 @@ class Bot(lightbulb.Bot):
         self.embeds = Embeds()
         self.db = Database(self)
 
-        uvloop.install()
-
         # Initiate hikari BotApp superclass
         super().__init__(
             token = Config.env("TOKEN"),
-            owner_ids=Config.env("OWNER_IDS", int),
             intents = hikari.Intents.ALL,
             prefix = lightbulb.when_mentioned_or(self.resolve_prefix),
             insensitive_commands = True,
@@ -68,7 +66,7 @@ class Bot(lightbulb.Bot):
         self.session = aiohttp.ClientSession()
 
         # List of tuples containing guild ID and prefix
-        for guild in await self.db.records("SELECT * FROM guilds"):
+        for guild in await self.db.records("SELECT GuildID, Prefix FROM guilds"):
             # Cache prefixes into self.guilds
             self.guilds[guild[0]] = {
                 "prefix": guild[1]
