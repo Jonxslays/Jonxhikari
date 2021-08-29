@@ -1,6 +1,5 @@
 import re
 
-import aiohttp
 import asyncio
 import lightbulb
 import hikari
