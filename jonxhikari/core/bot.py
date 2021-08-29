@@ -101,7 +101,7 @@ class Bot(lightbulb.Bot):
         """Fires once bot is fully connected"""
         await self.db.sync()
         self.scheduler.start()
-        self.add_check(self._dm_commands)
+        self.add_check(self._dm_command)
 
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""

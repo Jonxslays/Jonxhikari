@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "jonxhikari"
+version = "0.1.0"
+description = "Discord bot written in python with Hikari."
+authors = ["Jonxslays"]
+license = "BSD-3-Clause"
+
+[tool.poetry.dependencies]
+python = ">=3.8.0,<3.10"
+aiohttp = "3.7.4.post0"
+aiosqlite = "0.17.0"
+APScheduler = "3.7.0"
+distro = "1.5.0"
+hikari = "2.0.0.dev101"
+hikari-lightbulb = "1.0.1"
+mypy = "0.812"
+mypy-extensions = "0.4.3"
+psutil = "5.8.0"
+pygount = "1.2.4"
+python-dotenv = "0.17.1"
+uvloop = "0.15.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -27,7 +27,6 @@ class Events(lightbulb.Plugin):
         """Handles Lightbulb command exception events."""
         await self.bot.errors.parse(event.exception, None)
 
-
     @lightbulb.plugins.listener()
     async def on_reaction_add(self, event: hikari.ReactionAddEvent) -> None:
         stars = ("⭐")
@@ -121,8 +120,6 @@ class Events(lightbulb.Plugin):
 
             else:
                 await message.remove_reaction(emoji=event.emoji, user=user)
-
-
 
 
 def load(bot: lightbulb.Bot) -> None:
