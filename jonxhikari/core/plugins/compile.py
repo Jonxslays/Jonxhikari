@@ -18,13 +18,12 @@ class Compile(lightbulb.Plugin):
         """Gets available language details from Piston api."""
         uri = self.uri + "/runtimes"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(uri) as response:
-                if not 200 <= response.status <= 299:
-                    return None
+        async with self.bot.session.get(uri) as response:
+            if not 200 <= response.status <= 299:
+                return None
 
-                if not (data := await response.json()):
-                    return None
+            if not (data := await response.json()):
+                return None
 
         await asyncio.gather(
             *(self.resolve_lang(lang) for lang in data)
@@ -68,13 +67,12 @@ class Compile(lightbulb.Plugin):
             ],
         }
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(uri, json=data) as response:
-                if not 200 <= response.status <= 299:
-                    return None
+        async with self.bot.session.post(uri, json=data) as response:
+            if not 200 <= response.status <= 299:
+                return None
 
-                if not (data := await response.json()):
-                    return None
+            if not (data := await response.json()):
+                return None
 
         fields = [
             ("Language:", f"```{data['language'].title()}```", True),

@@ -1,9 +1,8 @@
 from __future__ import annotations
-import logging
-from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import Union
 
+import aiohttp
 import lightbulb
 import hikari
 import uvloop
@@ -26,17 +25,17 @@ class Bot(lightbulb.Bot):
         self.guilds: dict[int, dict[str, Union[int, str]]] = {}
 
         self.scheduler = AsyncIOScheduler()
+        self.log = Config.logging()
         self.errors = Errors()
         self.embeds = Embeds()
         self.db = Database(self)
 
-        self.logging_config()
         uvloop.install()
 
         # Initiate hikari BotApp superclass
         super().__init__(
-            token = Config.get("TOKEN"),
-            owner_ids=Config.get("OWNER_IDS"),
+            token = Config.env("TOKEN"),
+            owner_ids=Config.env("OWNER_IDS", int),
             intents = hikari.Intents.ALL,
             prefix = lightbulb.when_mentioned_or(self.resolve_prefix),
             insensitive_commands = True,
@@ -55,25 +54,6 @@ class Bot(lightbulb.Bot):
         for key in subscriptions:
             self.event_manager.subscribe(key, subscriptions[key])
 
-    def logging_config(self) -> None:
-        """Logs to a file that rotates every 3 days"""
-        self.log = logging.getLogger("root")
-        self.log.setLevel(logging.INFO)
-
-        trfh = TimedRotatingFileHandler(
-            "./jonxhikari/data/logs/main.log",
-            when="D", interval=3, encoding="utf-8",
-            backupCount=10
-        )
-
-        ff = logging.Formatter(
-            f"[%(asctime)s] %(levelname)s ||| %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S"
-        )
-
-        trfh.setFormatter(ff)
-        self.log.addHandler(trfh)
-
     async def on_guild_available(self, event: hikari.GuildAvailableEvent) -> None:
         """fires on new guild join, on startup, and after disconnect"""
         if event.guild_id not in self.guilds:
@@ -85,6 +65,7 @@ class Bot(lightbulb.Bot):
     async def on_starting(self, _: hikari.StartingEvent) -> None:
         """Fires before bot is connected. Blocks on_started until complete."""
         await self.db.connect()
+        self.session = aiohttp.ClientSession()
 
         # List of tuples containing guild ID and prefix
         for guild in await self.db.records("SELECT * FROM guilds"):
@@ -106,9 +87,10 @@ class Bot(lightbulb.Bot):
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""
         self.scheduler.shutdown()
+        await self.session.close()
         await self.db.close()
 
-    async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str | None:
+    async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
         """Grabs a prefix to be used in a particular context"""
         if (id_ := message.guild_id) in self.guilds:
             return self.guilds[id_]["prefix"]
@@ -121,4 +103,4 @@ class Bot(lightbulb.Bot):
     #TODO Find a better way. guild_id may not be cached.
     async def _dm_command(self, message: hikari.Message) -> bool:
         """Checks if command was invoked in DMs"""
-        return message.guild_id is None
+        return not message.guild_id is None

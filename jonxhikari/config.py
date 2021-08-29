@@ -1,4 +1,6 @@
-from __future__ import annotations
+import logging
+import typing as t
+from logging.handlers import TimedRotatingFileHandler
 from os import environ
 
 import dotenv
@@ -7,35 +9,48 @@ import dotenv
 dotenv.load_dotenv()
 
 
+class DatabaseLoggingFilter(logging.Filter):
+    """Filters out Database sync logs."""
+    def filter(self, record: logging.LogRecord) -> bool:
+        return (
+            'Running job "Database.commit' not in (m := record.getMessage())
+            and 'Job "Database.commit' not in m
+        )
+
 class Config:
-    """Gets environment variables from a `.env` file."""
-    @classmethod
-    def get(cls, var: str) -> str | int | bool:
+    """Object related to configuration."""
+
+    @staticmethod
+    def env(var: str, type_: type = str) -> t.Any:
+        """Gets environment variables from a `.env` file."""
         try:
-            t, v = environ[var].split(":", maxsplit=1)
-
-            if t == "str":
-                return str(v)
-
-            if t == "int":
-                return int(v)
-
-            if t == "bool":
-                _v = {
-                    "True": True,
-                    "true": True,
-                    "False": False,
-                    "false": False,
-                }
-
-                if v not in _v.keys():
-                    raise LookupError(
-                        f"`{var}` is using an invalid boolean value in config."
-                    )
-
-                return _v[v]
+            return type_(environ[var])
 
         except KeyError:
             raise LookupError(f"`{var}` is not defined in config.") from None
 
-        raise LookupError(f"`{var}` has an invalid type in config.")
+        except ValueError:
+            raise LookupError(f"Can't convert `{var}` to `{type_}`.")
+
+    @staticmethod
+    def logging() -> logging.Logger:
+        """Logs to a file that rotates every 3 days"""
+        log = logging.getLogger("root")
+        log.setLevel(logging.INFO)
+
+        trfh = TimedRotatingFileHandler(
+            "./jonxhikari/data/logs/main.log",
+            when="D", interval=3, encoding="utf-8",
+            backupCount=10
+        )
+
+        ff = logging.Formatter(
+            f"[%(asctime)s] %(levelname)s ||| %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S"
+        )
+
+        trfh.setFormatter(ff)
+        trfh.addFilter(DatabaseLoggingFilter())
+        log.addHandler(trfh)
+
+        return log

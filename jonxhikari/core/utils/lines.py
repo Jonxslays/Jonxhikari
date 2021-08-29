@@ -13,14 +13,14 @@ class Lines:
     def __len__(self) -> int:
         return len(self.targets)
 
-    def grab_percents(self) -> None:
+    def grab_percents(self) -> tuple[float]:
         """returns (code, docs, blank) percentages."""
         code_p = self.code / self.total * 100
         docs_p = self.docs / self.total * 100
         blank_p = self.blank / self.total * 100
         return round(code_p, 2), round(docs_p, 2), round(blank_p, 2)
 
-    def count(self):
+    def count(self) -> None:
         """Counts the code in each file."""
         data = ProjectSummary()
 
