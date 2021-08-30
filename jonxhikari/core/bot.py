@@ -14,7 +14,6 @@ from jonxhikari.core.client import SlashClient
 
 
 class Bot(lightbulb.Bot):
-    __slots__ = (lightbulb.Bot.__slots__, "client")
 
     def __init__(self, version: str) -> None:
         self._plugins_dir = "./jonxhikari/core/plugins"

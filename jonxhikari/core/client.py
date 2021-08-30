@@ -4,19 +4,15 @@ from pathlib import Path
 import hikari
 import tanjun
 
-import jonxhikari
-
 
 class SlashClient(tanjun.Client):
     """Client for handling Slash Commands."""
-
-    __slots__ = ("bot")
 
     def __init__(self, bot: hikari.traits.GatewayBotAware, *args: t.Any, **kwargs: t.Any) -> None:
         super().__init__(*args, **kwargs)
         self.bot = bot
 
-    def load_modules(self, *modules: t.Union[str, Path]) -> SlashClient:
+    def load_modules(self, *modules: t.Union[str, Path]) -> "SlashClient":
         """Loads Tanjun modules."""
         return super().load_modules(
             *(f"jonxhikari.core.modules.{p.stem}" for p in Path(".").glob("./jonxhikari/core/modules/*.py"))
@@ -31,7 +27,7 @@ class SlashClient(tanjun.Client):
         event_managed: bool = True,
         mention_prefix: bool = False,
         set_global_commands: t.Union[hikari.Snowflake, bool] = False,
-    ) -> SlashClient:
+    ) -> "SlashClient":
         return (
             cls(
                 bot,
