@@ -1,7 +1,5 @@
-import random
 from time import time
 
-import hikari
 import tanjun
 
 from jonxhikari import SlashClient
@@ -11,7 +9,7 @@ component = tanjun.Component()
 
 
 @component.with_command
-@tanjun.as_slash_command("ping", "get a response from the bot")
+@tanjun.as_slash_command("ping", "Returns the bot's latency")
 async def ping_command(ctx: tanjun.abc.Context) -> None:
     start = time()
     await ctx.respond("uwu-owo")
