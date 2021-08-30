@@ -2,8 +2,6 @@ from time import time
 
 import tanjun
 
-from jonxhikari import SlashClient
-
 
 component = tanjun.Component()
 
@@ -21,5 +19,5 @@ async def ping_command(ctx: tanjun.abc.Context) -> None:
 
 
 @tanjun.as_loader
-def load_component(client: SlashClient) -> None:
+def load_component(client: tanjun.abc.Client) -> None:
     client.add_component(component.copy())

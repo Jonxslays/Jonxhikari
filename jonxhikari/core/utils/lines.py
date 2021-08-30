@@ -13,7 +13,7 @@ class Lines:
     def __len__(self) -> int:
         return len(self.targets)
 
-    def grab_percents(self) -> tuple[float]:
+    def grab_percents(self) -> tuple[float, float, float]:
         """returns (code, docs, blank) percentages."""
         code_p = self.code / self.total * 100
         docs_p = self.docs / self.total * 100

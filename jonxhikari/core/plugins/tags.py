@@ -127,7 +127,7 @@ class Tags(lightbulb.Plugin):
         name = name.lower()
 
         try:
-            member = await lightbulb.member_converter(lightbulb.WrappedArg(member, ctx))
+            memb: hikari.Member = await lightbulb.member_converter(lightbulb.WrappedArg(member, ctx))
 
         except lightbulb.errors.ConverterFailure as e:
             await self.bot.errors.parse(e, ctx)
@@ -141,10 +141,10 @@ class Tags(lightbulb.Plugin):
             if owner == ctx.author.id:
                 await self.bot.db.execute(
                     "UPDATE tags SET TagOwner = ? WHERE GuildID = ? and TagName = ?",
-                    member.id, ctx.guild_id, name
+                    memb.id, ctx.guild_id, name
                 )
                 await ctx.respond(
-                    f"**SUCCESS**\n`{name}` tag transferred from {ctx.author.mention} to {member.mention}.",
+                    f"**SUCCESS**\n`{name}` tag transferred from {ctx.author.mention} to {memb.mention}.",
                     reply=True
                 )
                 return None

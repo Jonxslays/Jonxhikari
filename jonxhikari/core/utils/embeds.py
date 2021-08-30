@@ -33,11 +33,14 @@ class Embeds:
         self.desc: t.Optional[str] = kwargs.get("description")
         self.footer: t.Optional[str] = kwargs.get("footer")
         self.header: t.Optional[str] = kwargs.get("header")
-        self.header_icon: typing.Optional[files.Resourceish] = kwargs.get("header_icon")
-        self.thumbnail: typing.Optional[hikari.files.Resourceish] = kwargs.get("thumbnail")
-        self.image: typing.Optional[hikari.files.Resourceish] = kwargs.get("image")
-        self.color: typing.Optional[colors.Colorish] = kwargs.get("color")
+        self.header_url: t.Optional[str] = kwargs.get("header_url")
+        self.header_icon: t.Optional[hikari.files.Resourceish] = kwargs.get("header_icon")
+        self.thumbnail: t.Optional[hikari.files.Resourceish] = kwargs.get("thumbnail")
+        self.image: t.Optional[hikari.files.Resourceish] = kwargs.get("image")
+        self.color: t.Optional[hikari.colors.Colorish] = kwargs.get("color")
         self.time: datetime.datetime = datetime.datetime.now().astimezone()
+
+        assert self._ctx is not None # You happy now mypy???
 
         embed = hikari.Embed(
             title = self.title,
@@ -50,6 +53,7 @@ class Embeds:
             self.image
         ).set_author(
             name = self.header or "Jxhk",
+            url = self.header_url,
             icon = self.header_icon
         ).set_footer(
             text = self.footer or f"Invoked by: {self._ctx.author.username}",

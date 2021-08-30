@@ -14,6 +14,8 @@ from jonxhikari.core.client import SlashClient
 
 
 class Bot(lightbulb.Bot):
+    __slots__ = (lightbulb.Bot.__slots__, "client")
+
     def __init__(self, version: str) -> None:
         self._plugins_dir = "./jonxhikari/core/plugins"
         self._plugins = [p.stem for p in Path(".").glob(f"{self._plugins_dir}/*.py")]
@@ -52,12 +54,13 @@ class Bot(lightbulb.Bot):
             self.event_manager.subscribe(key, subscriptions[key])
 
         # Create a Slash Command Client from the Bot
-        self.client = SlashClient.from_gateway_bot(
+        self.client: SlashClient = SlashClient.from_gateway_bot(
             self, set_global_commands=Config.env("HOME_GUILD", int),
-        ).load_modules()
+        )
+        self.client.load_modules()
 
         # Attach the bot instance to the Client
-        self.client.bot = self
+        # self.client.bot = self
 
     async def on_guild_available(self, event: hikari.GuildAvailableEvent) -> None:
         """fires on new guild join, on startup, and after disconnect"""
@@ -90,7 +93,9 @@ class Bot(lightbulb.Bot):
         self.add_check(self._dm_command)
 
         # Verifies we are synced both ways
-        if not self.get_me().id == self.client.bot.get_me().id:
+        assert (bot_me := self.get_me()) is not None
+        assert (client_me := self.client.bot.get_me()) is not None
+        if not bot_me.id == client_me.id:
             raise RuntimeError("Bot and SlashClient are out of sync!")
 
         print("Bot and SlashClient synced!")
@@ -104,10 +109,14 @@ class Bot(lightbulb.Bot):
     async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
         """Grabs a prefix to be used in a particular context"""
         if (id_ := message.guild_id) in self.guilds:
-            return self.guilds[id_]["prefix"]
+            cached_p = self.guilds[id_]["prefix"]
+            assert isinstance(cached_p, str)
+            return cached_p
 
         if not await self._dm_command(message):
-            return await self.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", id_)
+            fetched_p = await self.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", id_)
+            assert isinstance(fetched_p, str)
+            return fetched_p
 
         return "$"
 

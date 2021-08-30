@@ -1,6 +1,5 @@
 import datetime
 
-from hikari.events.base_events import ExceptionEvent
 from hikari.messages import Attachment
 import lightbulb
 import hikari
@@ -29,8 +28,8 @@ class Events(lightbulb.Plugin):
         await self.bot.errors.parse(event.exception, event.context)
 
     @lightbulb.plugins.listener()
-    async def on_exc(self, event: ExceptionEvent) -> None:
-        """Handles Lightbulb command exception events."""
+    async def on_exc(self, event:hikari.ExceptionEvent) -> None: # type: ignore
+        """Handles other exception events."""
         await self.bot.errors.parse(event.exception, None)
 
 

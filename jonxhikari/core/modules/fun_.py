@@ -7,7 +7,7 @@ from jonxhikari import Config, SlashClient
 component = tanjun.Component()
 
 
-async def call_cat_api(client: SlashClient) -> str:
+async def call_cat_api(client: tanjun.abc.Client) -> str:
     url = "https://api.thecatapi.com/v1/images/search"
     headers = {"x-api-key": Config.env("CAT_API_KEY")}
 
@@ -18,7 +18,8 @@ async def call_cat_api(client: SlashClient) -> str:
         if not (data := await response.json()):
             return ""
 
-    return data[0]["url"]
+    assert isinstance(d := data[0]["url"], str)
+    return d
 
 
 @component.with_slash_command
@@ -38,5 +39,5 @@ async def kitties_command(ctx: tanjun.abc.Context) -> None:
 
 
 @tanjun.as_loader
-def load_component(client: SlashClient) -> None:
+def load_component(client: tanjun.abc.Client) -> None:
     client.add_component(component.copy())
