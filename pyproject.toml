@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jonxhikari"
-version = "0.1.0"
+version = "0.5.0"
 description = "Discord bot written in python with Hikari."
 authors = ["Jonxslays"]
 license = "BSD-3-Clause"
