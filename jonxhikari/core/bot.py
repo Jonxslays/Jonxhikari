@@ -10,14 +10,13 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from jonxhikari import Config
 from jonxhikari.core.db import Database
 from jonxhikari.core.utils import Embeds, Errors
+from jonxhikari.core.client import SlashClient
 
 
 class Bot(lightbulb.Bot):
     def __init__(self, version: str) -> None:
         self._plugins_dir = "./jonxhikari/core/plugins"
-        self._modules_dir = "./jonxhikari/core/modules"
         self._plugins = [p.stem for p in Path(".").glob(f"{self._plugins_dir}/*.py")]
-        self._modules = [p.stem for p in Path(".").glob(f"{self._modules_dir}/*.py")]
         self._dynamic = "./jonxhikari/data/dynamic"
         self._static = "./jonxhikari/data/static"
 
@@ -31,7 +30,7 @@ class Bot(lightbulb.Bot):
         self.embeds = Embeds()
         self.db = Database(self)
 
-        # Initiate hikari BotApp superclass
+        # Initiate hikari GatewayBot superclass
         super().__init__(
             token = Config.env("TOKEN"),
             intents = hikari.Intents.ALL,
@@ -51,6 +50,14 @@ class Bot(lightbulb.Bot):
         # Subscribe to events
         for key in subscriptions:
             self.event_manager.subscribe(key, subscriptions[key])
+
+        # Create a Slash Command Client from the Bot
+        self.client = SlashClient.from_gateway_bot(
+            self, set_global_commands=Config.env("HOME_GUILD", int),
+        ).load_modules()
+
+        # Attach the bot instance to the Client
+        self.client.bot = self
 
     async def on_guild_available(self, event: hikari.GuildAvailableEvent) -> None:
         """fires on new guild join, on startup, and after disconnect"""
@@ -72,7 +79,7 @@ class Bot(lightbulb.Bot):
                 "prefix": guild[1]
             }
 
-        # Load plugins from extensions
+        # Load plugins from Lightbulb
         for plugin in self._plugins:
             self.load_extension(f"jonxhikari.core.plugins.{plugin}")
 
@@ -81,6 +88,12 @@ class Bot(lightbulb.Bot):
         await self.db.sync()
         self.scheduler.start()
         self.add_check(self._dm_command)
+
+        # Verifies we are synced both ways
+        if not self.get_me().id == self.client.bot.get_me().id:
+            raise RuntimeError("Bot and SlashClient are out of sync!")
+
+        print("Bot and SlashClient synced!")
 
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""

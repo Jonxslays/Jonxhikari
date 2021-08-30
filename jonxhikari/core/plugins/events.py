@@ -4,6 +4,7 @@ from hikari.events.base_events import ExceptionEvent
 from hikari.messages import Attachment
 import lightbulb
 import hikari
+import tanjun
 
 
 class Events(lightbulb.Plugin):
@@ -14,7 +15,12 @@ class Events(lightbulb.Plugin):
 
     @lightbulb.plugins.listener()
     async def on_cmd(self, _: lightbulb.CommandCompletionEvent) -> None:
-        """Fires on completion of a command"""
+        """Fires on completion of a command."""
+        self.bot._invokes += 1
+
+    @lightbulb.plugins.listener()
+    async def on_interaction(self, event: hikari.InteractionCreateEvent) -> None:
+        """Fires on creations of an interaction."""
         self.bot._invokes += 1
 
     @lightbulb.plugins.listener()
