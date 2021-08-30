@@ -75,16 +75,16 @@ class Tags(lightbulb.Plugin):
             return None
 
         # Define emojis
-        yes = ":yes:853792470651502603"
-        no = ":no:853792496118267954"
+        yes = 853792470651502603
+        no = 853792496118267954
 
         # There is no tag with that name, do they want to make one?
         msg = await ctx.respond(f"**FAILED**\nNo `{name}` tag exists. Would you like to create it now?")
-        await msg.add_reaction(yes)
-        await msg.add_reaction(no)
+        await msg.add_reaction("yes", yes)
+        await msg.add_reaction("no", no)
 
         def predicate(e: hikari.ReactionAddEvent) -> bool:
-            return e.message_id == msg.id and e.user_id == ctx.author.id and str(e.emoji) in ("yes", "no")
+            return e.message_id == msg.id and e.user_id == ctx.author.id and e.emoji_id in (yes, no)
 
         try:
             e = await self.bot.wait_for(hikari.ReactionAddEvent, 30, predicate)
@@ -95,12 +95,12 @@ class Tags(lightbulb.Plugin):
 
         else:
             # They don't want to make a new tag
-            if str(e.emoji) == "no":
+            if e.emoji_id == no:
                 await msg.edit(content=f"**FAILED**\nNo `{name}` tag exists.")
                 await msg.remove_all_reactions()
 
             # They do want to make a new tag
-            elif str(e.emoji) == "yes":
+            elif e.emoji_id == yes:
                 await self.bot.db.execute(
                     "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES (?, ?, ?, ?)",
                     ctx.guild_id, ctx.author.id, name, content

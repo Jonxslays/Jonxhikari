@@ -107,7 +107,7 @@ class Bot(lightbulb.Bot):
             return self.guilds[id_]["prefix"]
 
         if not await self._dm_command(message):
-            return await self.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", _id)
+            return await self.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", id_)
 
         return "$"
 
