@@ -23,6 +23,16 @@ class Tags(lightbulb.Plugin):
 
         await ctx.respond(f"`{name}` is not a valid tag.", reply=True)
 
+    @tag_group.command(name="list")
+    async def tag_list_cmd(self, ctx: lightbulb.Context) -> None:
+        """Command for listing all tags."""
+        query = "SELECT TagName from tags WHERE GuildID = ?"
+        if len(tags := await self.bot.db.column(query, ctx.guild_id)) == 0:
+            await ctx.respond("No tags for this guild yet, make one!", reply=True)
+            return None
+
+        await ctx.respond(f"```{', '.join(t for t in tags)}```")
+
     @tag_group.command(name="create")
     async def tag_create_cmd(self, ctx: lightbulb.Context, name: str, *, content: str) -> None:
         """Command for creating a new tag."""
