@@ -8,7 +8,7 @@ from jonxhikari import SlashClient
 component = tanjun.Component()
 
 
-@component.with_command
+@component.with_slash_command
 @tanjun.as_slash_command("ping", "Returns the bot's latency")
 async def ping_command(ctx: tanjun.abc.Context) -> None:
     start = time()

@@ -1,3 +1,4 @@
+import hikari
 import tanjun
 
 from jonxhikari import Config, SlashClient
@@ -20,14 +21,20 @@ async def call_cat_api(client: SlashClient) -> str:
     return data[0]["url"]
 
 
-@component.with_command
+@component.with_slash_command
 @tanjun.as_slash_command("kitties", "Fetch a random kitty")
 async def kitties_command(ctx: tanjun.abc.Context) -> None:
     if not (url := await call_cat_api(ctx.client)):
         await ctx.respond("Unable to fetch a kitty right now :(")
+        return None
 
-    else:
-        await ctx.respond(url)
+    e = ctx.client.bot.embeds.build(
+        header="Awwww",
+        ctx=ctx,
+        image=hikari.files.URL(url),
+    )
+
+    await ctx.respond(e)
 
 
 @tanjun.as_loader

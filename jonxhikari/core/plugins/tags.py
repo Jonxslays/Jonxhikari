@@ -27,6 +27,7 @@ class Tags(lightbulb.Plugin):
     async def tag_list_cmd(self, ctx: lightbulb.Context) -> None:
         """Command for listing all tags."""
         query = "SELECT TagName from tags WHERE GuildID = ?"
+
         if len(tags := await self.bot.db.column(query, ctx.guild_id)) == 0:
             await ctx.respond("No tags for this guild yet, make one!", reply=True)
             return None
