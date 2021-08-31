@@ -49,7 +49,7 @@ class Tags(lightbulb.Plugin):
             ctx.guild_id, name
         ):
             await ctx.respond(
-                f"Sorry, `{name}` was already created by {self.bot.cache.get_member(ctx.guild_id, owner).mention}." +
+                f"Sorry, `{name}` was already created by {ctx.author.mention}." +
                 "Try a different tag name.", reply=True
             )
             return None

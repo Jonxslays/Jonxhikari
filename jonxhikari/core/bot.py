@@ -55,11 +55,10 @@ class Bot(lightbulb.Bot):
         # Create a Slash Command Client from the Bot
         self.client: SlashClient = SlashClient.from_gateway_bot(
             self, set_global_commands=Config.env("HOME_GUILD", int),
-        )
-        self.client.load_modules()
+        ).load_modules()
 
-        # Attach the bot instance to the Client
-        # self.client.bot = self
+        # Attach the Bot to the Client
+        self.client.bot = self
 
     async def on_guild_available(self, event: hikari.GuildAvailableEvent) -> None:
         """fires on new guild join, on startup, and after disconnect"""
@@ -91,14 +90,6 @@ class Bot(lightbulb.Bot):
         self.scheduler.start()
         self.add_check(self._dm_command)
 
-        # Verifies we are synced both ways
-        assert (bot_me := self.get_me()) is not None
-        assert (client_me := self.client.bot.get_me()) is not None
-        if not bot_me.id == client_me.id:
-            raise RuntimeError("Bot and SlashClient are out of sync!")
-
-        print("Bot and SlashClient synced!")
-
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""
         self.scheduler.shutdown()
@@ -107,6 +98,9 @@ class Bot(lightbulb.Bot):
 
     async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
         """Grabs a prefix to be used in a particular context"""
+        if not message.guild_id:
+            return "$"
+
         if (id_ := message.guild_id) in self.guilds:
             cached_p = self.guilds[id_]["prefix"]
             assert isinstance(cached_p, str)
@@ -122,4 +116,4 @@ class Bot(lightbulb.Bot):
     #TODO Find a better way. guild_id may not be cached.
     async def _dm_command(self, message: hikari.Message) -> bool:
         """Checks if command was invoked in DMs"""
-        return not message.guild_id is None
+        return message.guild_id is not None

@@ -7,10 +7,9 @@ import tanjun
 
 class SlashClient(tanjun.Client):
     """Client for handling Slash Commands."""
-
-    def __init__(self, bot: hikari.traits.GatewayBotAware, *args: t.Any, **kwargs: t.Any) -> None:
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         super().__init__(*args, **kwargs)
-        self.bot = bot
+        print("SlashClient initialized!")
 
     def load_modules(self, *modules: t.Union[str, Path]) -> "SlashClient":
         """Loads Tanjun modules."""
@@ -30,7 +29,6 @@ class SlashClient(tanjun.Client):
     ) -> "SlashClient":
         return (
             cls(
-                bot,
                 rest=bot.rest,
                 cache=bot.cache,
                 events=bot.event_manager,

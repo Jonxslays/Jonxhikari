@@ -1,6 +1,9 @@
+import typing as t
 from time import time
 
 import tanjun
+
+from jonxhikari import SlashClient
 
 
 component = tanjun.Component()
