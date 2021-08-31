@@ -81,7 +81,7 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
         ctx.guild_id, name
     ):
         await ctx.respond(
-            f"Sorry, `{name}` was already created by {ctx.author.mention}. "
+            f"Sorry, `{name}` was already created by <@!{owner}>. "
             "Try a different tag name."
         )
         return None
@@ -117,7 +117,7 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
 
         # Author doesn't own the tag
         await ctx.respond(
-            f"**FAILURE**\n{ctx.author.mention} owns the `{name}` tag, not you."
+            f"**FAILURE**\n<@!{owner}> owns the `{name}` tag, not you."
         )
         return None
 
@@ -153,6 +153,38 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
                 content=f"**ABORTED**\nNot creating new tag `{name}`",
                 reply=True
             )
+
+
+@tag_group.with_command
+@tanjun.with_member_slash_option("member", "The member to transfer the tag to.")
+@tanjun.with_str_slash_option("name", "The name of the tag to transfer.")
+@tanjun.as_slash_command("transfer", "Transfer a tag you own to another member.")
+async def tag_delete_slash_command(ctx: tanjun.abc.Context, name: str, member: hikari.InteractionMember) -> None:
+    """Command for transferring a tag you own to someone else."""
+    name = name.lower()
+
+    if owner := await ctx.client.bot.db.field(
+        "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name
+    ):
+        # A successful transfer
+        if owner == ctx.author.id:
+            await ctx.client.bot.db.execute(
+                "UPDATE tags SET TagOwner = ? WHERE GuildID = ? and TagName = ?",
+                member.id, ctx.guild_id, name
+            )
+            await ctx.respond(
+                f"**SUCCESS**\n`{name}` tag transferred from {ctx.author.mention} to {member.mention}."
+            )
+            return None
+
+        # Can't transfer a tag they don't own
+        await ctx.respond(
+            f"**FAILURE**\n<@!{owner}> owns the `{name}` tag, not you."
+        )
+        return None
+
+    # Can't transfer a tag that doesn't exist
+    await ctx.respond(f"**FAILURE**\nNo `{name}` tag exists.")
 
 
 @tanjun.as_loader
