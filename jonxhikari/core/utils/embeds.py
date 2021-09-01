@@ -6,6 +6,11 @@ import hikari
 import tanjun
 
 
+FieldsT =  t.Optional[list[tuple[t.Union[str, int], t.Union[str, int], bool]]]
+CtxT = t.Union[lightbulb.Context, tanjun.abc.Context]
+ResourceishT = t.Optional[hikari.files.Resourceish]
+
+
 class Embeds:
     """Embed constructor class."""
 
@@ -27,16 +32,16 @@ class Embeds:
         Returns:
              - hikari.Embed
         """
-        self.fields: t.Optional[list[tuple[str, str, bool]]] = kwargs.get("fields")
-        self._ctx: t.Union[lightbulb.Context, tanjun.abc.Context] = kwargs.get("ctx")
+        self.fields: FieldsT = kwargs.get("fields")
+        self._ctx: CtxT = kwargs.get("ctx")
         self.title: t.Optional[str] = kwargs.get("title")
         self.desc: t.Optional[str] = kwargs.get("description")
         self.footer: t.Optional[str] = kwargs.get("footer")
         self.header: t.Optional[str] = kwargs.get("header")
         self.header_url: t.Optional[str] = kwargs.get("header_url")
-        self.header_icon: t.Optional[hikari.files.Resourceish] = kwargs.get("header_icon")
-        self.thumbnail: t.Optional[hikari.files.Resourceish] = kwargs.get("thumbnail")
-        self.image: t.Optional[hikari.files.Resourceish] = kwargs.get("image")
+        self.header_icon: ResourceishT = kwargs.get("header_icon")
+        self.thumbnail: ResourceishT = kwargs.get("thumbnail")
+        self.image: ResourceishT = kwargs.get("image")
         self.color: t.Optional[hikari.colors.Colorish] = kwargs.get("color")
         self.time: datetime.datetime = datetime.datetime.now().astimezone()
 

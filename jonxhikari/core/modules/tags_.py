@@ -14,7 +14,7 @@ from jonxhikari import SlashClient
 # - [x] tag edit
 # - [x] tag transfer
 # - [x] tag delete
-# - [ ] tag info    | started but not done
+# - [ ] tag info    | Need to implement getting info on all tags by a member.
 
 
 component = tanjun.Component()
@@ -60,9 +60,32 @@ async def tag_info_slash_command(
     member: t.Optional[hikari.InteractionMember]
 ) -> None:
     """Gets info about a tag, or a members tags."""
-    if not name and not member:
-        await ctx.respond(f"Please pass a name or member to get tag information about.")
+    if (not name and not member):
+        await ctx.respond("Please pass a name or member to get tag information about.")
+        return None
 
+    if name and member:
+        await ctx.respond("You can only get info on a name OR a member, but not both.")
+        return None
+
+    name_query: str = "SELECT TagOwner, Uses FROM tags WHERE TagName = ? AND GuildID = ?"
+
+    if name:
+        if not (tag_info := await ctx.client.bot.db.record(name_query, name.lower(), ctx.guild_id)):
+            await ctx.respond(f"**FAILURE**\nNo `{name}` tag exists.")
+            return None
+
+        await ctx.respond(
+            ctx.client.bot.embeds.build(
+                ctx=ctx,
+                header="Tag Information",
+                description=f"Requested tag: `{name}`",
+                fields=[
+                    ("Owner", f"<@!{tag_info[0]}>", True),
+                    ("Uses", tag_info[1], True),
+                ]
+            )
+        )
 
 @tag_group.with_command
 @tanjun.as_slash_command("list", "List this guilds tags.")

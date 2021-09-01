@@ -32,7 +32,7 @@ class Events(lightbulb.Plugin):
     @lightbulb.plugins.listener()
     async def on_exc(self, event: hikari.ExceptionEvent) -> None: # type: ignore
         """Handles other exception events."""
-        await self.bot.errors.parse(event.exception, None)
+        await self.bot.errors.parse(event.exception)
 
 
 def load(bot: lightbulb.Bot) -> None:

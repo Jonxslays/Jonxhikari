@@ -18,6 +18,11 @@ class Errors:
         return WTFError(message)
 
     @staticmethod
+    async def parse(exc: Exception) -> None:
+        print(exc)
+        raise exc
+
+    @staticmethod
     async def parse_tanjun(
         exc: t.Union[tanjun.CommandError, Exception],
         ctx: tanjun.abc.Context
