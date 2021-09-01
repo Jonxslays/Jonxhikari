@@ -49,7 +49,7 @@ class Tags(lightbulb.Plugin):
             ctx.guild_id, name
         ):
             await ctx.respond(
-                f"Sorry, `{name}` was already created by {ctx.author.mention}." +
+                f"**FAILURE**\nSorry, `{name}` was already created by {ctx.author.mention}. "
                 "Try a different tag name.", reply=True
             )
             return None
@@ -81,7 +81,7 @@ class Tags(lightbulb.Plugin):
 
             # Author doesn't own the tag
             await ctx.respond(
-                f"**FAILED**\n{self.bot.cache.get_member(ctx.guild_id, owner)} owns the `{name}` tag, not you."
+                f"**FAILURE**\n{self.bot.cache.get_member(ctx.guild_id, owner)} owns the `{name}` tag, not you."
             )
             return None
 
@@ -90,7 +90,7 @@ class Tags(lightbulb.Plugin):
         no = 853792496118267954
 
         # There is no tag with that name, do they want to make one?
-        msg = await ctx.respond(f"**FAILED**\nNo `{name}` tag exists. Would you like to create it now?")
+        msg = await ctx.respond(f"**WARNING**\nNo `{name}` tag exists. Would you like to create it now?")
         await msg.add_reaction("yes", yes)
         await msg.add_reaction("no", no)
 
@@ -101,13 +101,13 @@ class Tags(lightbulb.Plugin):
             e = await self.bot.wait_for(hikari.ReactionAddEvent, 30, predicate)
 
         except asyncio.TimeoutError:
-            await msg.edit(content=f"**FAILED**\nNo `{name}` tag exists.")
+            await msg.edit(content=f"**TIMEOUT FAILURE**\nNo `{name}` tag exists.")
             await msg.remove_all_reactions()
 
         else:
             # They don't want to make a new tag
             if e.emoji_id == no:
-                await msg.edit(content=f"**FAILED**\nNo `{name}` tag exists.")
+                await msg.edit(content=f"**ABORTED**\nNot creatomg new tag `{name}`.")
                 await msg.remove_all_reactions()
 
             # They do want to make a new tag
@@ -122,17 +122,9 @@ class Tags(lightbulb.Plugin):
                 await msg.remove_all_reactions()
 
     @tag_group.command(name="transfer")
-    async def tag_transfer_cmd(self, ctx: lightbulb.Context, name: str, member: str) -> None:
+    async def tag_transfer_cmd(self, ctx: lightbulb.Context, name: str, member: hikari.Member) -> None:
         """Command for transferring a tag you own to someone else."""
         name = name.lower()
-
-        try:
-            memb: hikari.Member = await lightbulb.member_converter(lightbulb.WrappedArg(member, ctx))
-
-        except lightbulb.errors.ConverterFailure as e:
-            await self.bot.errors.parse(e, ctx)
-            await ctx.respond("Are you sure you passed in a valid member?")
-            return None
 
         if owner := await self.bot.db.field(
             "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name
@@ -141,23 +133,23 @@ class Tags(lightbulb.Plugin):
             if owner == ctx.author.id:
                 await self.bot.db.execute(
                     "UPDATE tags SET TagOwner = ? WHERE GuildID = ? and TagName = ?",
-                    memb.id, ctx.guild_id, name
+                    member.id, ctx.guild_id, name
                 )
                 await ctx.respond(
-                    f"**SUCCESS**\n`{name}` tag transferred from {ctx.author.mention} to {memb.mention}.",
+                    f"**SUCCESS**\n`{name}` tag transferred from {ctx.author.mention} to {member.mention}.",
                     reply=True
                 )
                 return None
 
             # Can't transfer a tag they don't own
             await ctx.respond(
-                f"**FAILED**\n{self.bot.cache.get_member(ctx.guild_id, owner)} owns the `{name}` tag, not you.",
+                f"**FAILURE**\n<@!{owner}> owns the `{name}` tag, not you.",
                 reply=True
             )
             return None
 
         # Can't transfer a tag that doesn't exist
-        await ctx.respond(f"**FAILED**\nNo `{name}` tag exists.", reply=True)
+        await ctx.respond(f"**FAILURE**\nNo `{name}` tag exists.", reply=True)
 
     @tag_group.command(name="delete")
     async def tag_delete_cmd(self, ctx: lightbulb.Context, name: str) -> None:
@@ -177,13 +169,13 @@ class Tags(lightbulb.Plugin):
 
             # Can't delete a tag they don't own
             await ctx.respond(
-                f"**FAILED**\n{self.bot.cache.get_member(ctx.guild_id, owner)} owns the `{name}` tag, not you.",
+                f"**FAILURE**\n<@!{owner}> owns the `{name}` tag, not you.",
                 reply=True
             )
             return None
 
         # Can't delete a tag that doesn't exist
-        await ctx.respond(f"**FAILED**\nNo`{name}` tag exists.", reply=True)
+        await ctx.respond(f"**FAILURE**\nNo `{name}` tag exists.", reply=True)
 
 
 def load(bot: lightbulb.Bot) -> None:

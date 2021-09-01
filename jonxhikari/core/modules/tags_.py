@@ -11,8 +11,8 @@ from jonxhikari import SlashClient
 # - [x] tag get
 # - [x] tag create
 # - [x] tag edit
-# - [ ] tag transfer
-# - [ ] tag delete
+# - [x] tag transfer
+# - [x] tag delete
 # - [ ] tag info
 
 
@@ -81,7 +81,7 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
         ctx.guild_id, name
     ):
         await ctx.respond(
-            f"Sorry, `{name}` was already created by <@!{owner}>. "
+            f"**FAILURE**\nSorry, `{name}` was already created by <@!{owner}>. "
             "Try a different tag name."
         )
         return None
@@ -184,6 +184,34 @@ async def tag_delete_slash_command(ctx: tanjun.abc.Context, name: str, member: h
         return None
 
     # Can't transfer a tag that doesn't exist
+    await ctx.respond(f"**FAILURE**\nNo `{name}` tag exists.")
+
+
+@tag_group.with_command
+@tanjun.with_str_slash_option("name", "The name of the tag to delete.")
+@tanjun.as_slash_command("delete", "Delete a tag you own.")
+async def tag_delete_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
+    """Command for deleting a tag you own."""
+    name = name.lower()
+
+    if owner := await ctx.client.bot.db.field(
+        "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name
+    ):
+        # A successful deletion
+        if owner == ctx.author.id:
+            await ctx.client.bot.db.execute(
+                "DELETE FROM tags WHERE GuildID = ? and TagName = ?", ctx.guild_id, name
+            )
+            await ctx.respond(f"**SUCCESS**\n`{name}` tag deleted by {ctx.author.mention}.")
+            return None
+
+        # Can't delete a tag they don't own
+        await ctx.respond(
+            f"**FAILURE**\n<@!{owner}> owns the `{name}` tag, not you."
+        )
+        return None
+
+    # Can't delete a tag that doesn't exist
     await ctx.respond(f"**FAILURE**\nNo `{name}` tag exists.")
 
 
