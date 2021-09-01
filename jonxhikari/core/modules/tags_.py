@@ -1,4 +1,5 @@
 import asyncio
+import typing as t
 
 import hikari
 import tanjun
@@ -13,7 +14,7 @@ from jonxhikari import SlashClient
 # - [x] tag edit
 # - [x] tag transfer
 # - [x] tag delete
-# - [ ] tag info
+# - [ ] tag info    | started but not done
 
 
 component = tanjun.Component()
@@ -37,7 +38,7 @@ tag_group = component.with_slash_command(
 
 @tag_group.with_command
 @tanjun.with_str_slash_option("name", "The name of the tag to get.")
-@tanjun. as_slash_command("get", "Gets a tag from the database.")
+@tanjun.as_slash_command("get", "Gets a tag from the database.")
 async def tag_get_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
     """Gets a tag from the database."""
     query = "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = ? AND TagName = ? RETURNING TagContent"
@@ -47,6 +48,20 @@ async def tag_get_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
         return None
 
     await ctx.respond(f"`{name}` is not a valid tag.")
+
+
+@tag_group.with_command
+@tanjun.with_member_slash_option("member", "The member to get tags for.", default=None)
+@tanjun.with_str_slash_option("name", "The name of the tag to get.", default=None)
+@tanjun.as_slash_command("info", "Gets info about a tag, or a members tags.")
+async def tag_info_slash_command(
+    ctx: tanjun.abc.Context,
+    name: t.Optional[str],
+    member: t.Optional[hikari.InteractionMember]
+) -> None:
+    """Gets info about a tag, or a members tags."""
+    if not name and not member:
+        await ctx.respond(f"Please pass a name or member to get tag information about.")
 
 
 @tag_group.with_command
@@ -159,7 +174,7 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
 @tanjun.with_member_slash_option("member", "The member to transfer the tag to.")
 @tanjun.with_str_slash_option("name", "The name of the tag to transfer.")
 @tanjun.as_slash_command("transfer", "Transfer a tag you own to another member.")
-async def tag_delete_slash_command(ctx: tanjun.abc.Context, name: str, member: hikari.InteractionMember) -> None:
+async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member: hikari.InteractionMember) -> None:
     """Command for transferring a tag you own to someone else."""
     name = name.lower()
 

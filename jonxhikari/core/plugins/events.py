@@ -21,14 +21,16 @@ class Events(lightbulb.Plugin):
     async def on_interaction(self, event: hikari.InteractionCreateEvent) -> None:
         """Fires on creations of an interaction."""
         self.bot._invokes += 1
+        # TODO research interaction events on a lower level to
+        # prevent this from firing multiple times per command
 
     @lightbulb.plugins.listener()
     async def on_cmd_exc(self, event: lightbulb.CommandErrorEvent) -> None:
         """Handles Lightbulb command exception events."""
-        await self.bot.errors.parse(event.exception, event.context)
+        await self.bot.errors.parse_lightbulb(event.exception, event.context)
 
     @lightbulb.plugins.listener()
-    async def on_exc(self, event:hikari.ExceptionEvent) -> None: # type: ignore
+    async def on_exc(self, event: hikari.ExceptionEvent) -> None: # type: ignore
         """Handles other exception events."""
         await self.bot.errors.parse(event.exception, None)
 

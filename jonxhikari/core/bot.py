@@ -1,6 +1,5 @@
-from __future__ import annotations
+import typing as t
 from pathlib import Path
-from typing import Union
 
 import aiohttp
 import lightbulb
@@ -14,7 +13,6 @@ from jonxhikari.core.client import SlashClient
 
 
 class Bot(lightbulb.Bot):
-
     def __init__(self, version: str) -> None:
         self._plugins_dir = "./jonxhikari/core/plugins"
         self._plugins = [p.stem for p in Path(".").glob(f"{self._plugins_dir}/*.py")]
@@ -23,7 +21,7 @@ class Bot(lightbulb.Bot):
 
         self.version = version
         self._invokes = 0
-        self.guilds: dict[int, dict[str, Union[int, str]]] = {}
+        self.guilds: dict[int, dict[str, t.Union[int, str]]] = {}
 
         self.scheduler = AsyncIOScheduler()
         self.log = Config.logging()
@@ -31,7 +29,7 @@ class Bot(lightbulb.Bot):
         self.embeds = Embeds()
         self.db = Database(self)
 
-        # Initiate hikari GatewayBot superclass
+        # Initiate lightbulb Bot superclass
         super().__init__(
             token = Config.env("TOKEN"),
             intents = hikari.Intents.ALL,
@@ -53,12 +51,42 @@ class Bot(lightbulb.Bot):
             self.event_manager.subscribe(key, subscriptions[key])
 
         # Create a Slash Command Client from the Bot
-        self.client: SlashClient = SlashClient.from_gateway_bot(
+        self.client = SlashClient.from_gateway_bot(
             self, set_global_commands=Config.env("HOME_GUILD", int),
         ).load_modules()
 
         # Attach the Bot to the Client
         self.client.bot = self
+
+    @property
+    def yes(self) -> hikari.KnownCustomEmoji:
+        YES = 853792470651502603
+
+        if cached_yes := self.cache.get_emoji(YES):
+            assert isinstance(cached_yes, hikari.KnownCustomEmoji)
+            return cached_yes
+
+        if fetched_yes := self.rest.fetch_emoji(Config.env("HOME_GUILD", int), YES):
+            assert isinstance(fetched_yes, hikari.KnownCustomEmoji)
+            return fetched_yes
+
+        # We should never get here, but if so
+        raise self.errors.wtf("YES emoji is gone! PANIC!")
+
+    @property
+    def no(self) -> hikari.KnownCustomEmoji:
+        NO = 853792496118267954
+
+        if cached_no := self.cache.get_emoji(NO):
+            assert isinstance(cached_no, hikari.KnownCustomEmoji)
+            return cached_no
+
+        if fetched_no := self.rest.fetch_emoji(Config.env("HOME_GUILD", int), NO):
+            assert isinstance(fetched_no, hikari.KnownCustomEmoji)
+            return fetched_no
+
+        # We should never get here, but if so
+        raise self.errors.wtf("NO emoji is gone! PANIC!")
 
     async def on_guild_available(self, event: hikari.GuildAvailableEvent) -> None:
         """fires on new guild join, on startup, and after disconnect"""
