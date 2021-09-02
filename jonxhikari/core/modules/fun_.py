@@ -32,7 +32,7 @@ async def kitties_command(ctx: tanjun.abc.Context) -> None:
         await ctx.respond(ctx.client.errors.embed(ctx.client, "Unable to fetch a kitty right now :("))
         return None
 
-    e = ctx.client.bot.embeds.build(
+    e = ctx.client.embeds.build(
         header="Awwww",
         ctx=ctx,
         image=hikari.files.URL(url),
