@@ -8,11 +8,30 @@ import hikari
 import tanjun
 
 
+DualCtxT = t.Union[lightbulb.Context, tanjun.abc.Context]
+
+
 class WTFError(Exception):
     pass
 
 
 class Errors:
+
+    def embed(self, ctx: DualCtxT, message: str) -> hikari.Embed:
+        if isinstance(ctx, lightbulb.Context):
+            desc = f"{ctx.bot.no} {message}"
+
+        elif isinstance(ctx, tanjun.abc.Context):
+            desc = f"{ctx.client.bot.no} {message}"
+
+        return ctx.client.bot.embeds.build(
+            ctx=ctx,
+            description=desc,
+            footer="BYPASS",
+        )
+
+        raise self.wtf("Context in error embed was invalid... Somehow!")
+
     @staticmethod
     def wtf(message: str) -> WTFError:
         return WTFError(message)

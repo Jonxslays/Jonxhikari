@@ -43,7 +43,7 @@ class Embeds:
         self.thumbnail: ResourceishT = kwargs.get("thumbnail")
         self.image: ResourceishT = kwargs.get("image")
         self.color: t.Optional[hikari.colors.Colorish] = kwargs.get("color")
-        self.time: datetime.datetime = datetime.datetime.now().astimezone()
+        self.time: datetime.datetime = kwargs.get("timestamp", datetime.datetime.now().astimezone())
 
         assert self._ctx is not None # You happy now mypy???
 
@@ -57,17 +57,24 @@ class Embeds:
         ).set_image(
             self.image
         ).set_author(
-            name = self.header or "Jxhk",
+            name = self.header,
             url = self.header_url,
             icon = self.header_icon
         ).set_footer(
-            text = self.footer or f"Invoked by: {self._ctx.author.username}",
+            text = (
+                None if self.footer == "BYPASS" else (
+                    self.footer or f"Invoked by: {self._ctx.author.username}"
+                )
+
+            ),
             icon = (
-                self._ctx.author.avatar_url
-                or (
-                    self._ctx.bot.get_me().avatar_url
-                    if isinstance(self._ctx, lightbulb.Context)
-                    else self._ctx.client.bot.get_me().avatar_url
+                None if self.footer == "BYPASS" else (
+                    self._ctx.author.avatar_url
+                    or (
+                        self._ctx.bot.get_me().avatar_url
+                        if isinstance(self._ctx, lightbulb.Context)
+                        else self._ctx.client.bot.get_me().avatar_url
+                    )
                 )
             )
         )

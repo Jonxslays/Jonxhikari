@@ -4,10 +4,15 @@ from pathlib import Path
 import hikari
 import tanjun
 
+from jonxhikari.core.utils import Embeds, Errors
+
 
 class SlashClient(tanjun.Client):
     """Client for handling Slash Commands."""
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
+        self.errors = Errors()
+        self.embeds = Embeds()
+
         super().__init__(*args, **kwargs)
         print("SlashClient initialized!")
 
