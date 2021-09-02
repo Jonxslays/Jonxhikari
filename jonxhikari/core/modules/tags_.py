@@ -7,16 +7,6 @@ import tanjun
 from jonxhikari import SlashClient
 
 
-# SlashCommand tags TODO
-# - [x] tag list
-# - [x] tag get
-# - [x] tag create
-# - [x] tag edit
-# - [x] tag transfer
-# - [x] tag delete
-# - [ ] tag info    | Need to implement getting info on all tags by a member.
-
-
 component = tanjun.Component()
 
 
@@ -130,6 +120,7 @@ async def tag_list__slash_command(ctx: tanjun.abc.Context) -> None:
         )
         return None
 
+    assert ctx.guild_id is not None
     await ctx.respond(
         ctx.client.embeds.build(
             ctx=ctx,

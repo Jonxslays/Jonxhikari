@@ -24,12 +24,13 @@ class Errors:
         elif isinstance(ctx, tanjun.abc.Context):
             desc = f"{ctx.client.bot.no} {message}"
 
-        return ctx.client.bot.embeds.build(
+        embed: hikari.Embed = ctx.client.bot.embeds.build(
             ctx=ctx,
             description=desc,
             footer="BYPASS",
         )
 
+        return embed
         raise self.wtf("Context in error embed was invalid... Somehow!")
 
     @staticmethod
