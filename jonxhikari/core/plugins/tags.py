@@ -3,10 +3,12 @@ import asyncio
 import lightbulb
 import hikari
 
+import jonxhikari
+
 
 class Tags(lightbulb.Plugin):
     """Handles Jonxhikari's tag system"""
-    def __init__(self, bot: lightbulb.Bot) -> None:
+    def __init__(self, bot: jonxhikari.Bot) -> None:
         self.reserved = ("create", "delete", "edit", "info", "list", "transfer")
         self.bot = bot
         super().__init__()
@@ -178,9 +180,9 @@ class Tags(lightbulb.Plugin):
         await ctx.respond(f"**FAILURE**\nNo `{name}` tag exists.", reply=True)
 
 
-def load(bot: lightbulb.Bot) -> None:
+def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Tags(bot))
 
 
-def unload(bot: lightbulb.Bot) -> None:
+def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Tags")

@@ -7,9 +7,10 @@ import hikari
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Config
-from jonxhikari.core.db import Database
-from jonxhikari.core.utils import Embeds, Errors
-from jonxhikari.core.client import SlashClient
+from jonxhikari.core import Database
+from jonxhikari.core import Embeds
+from jonxhikari.core import Errors
+from jonxhikari.core import SlashClient
 
 
 class Bot(lightbulb.Bot):
@@ -51,12 +52,13 @@ class Bot(lightbulb.Bot):
             self.event_manager.subscribe(key, subscriptions[key])
 
         # Create a Slash Command Client from the Bot
-        self.client = SlashClient.from_gateway_bot(
+        self.client: SlashClient = SlashClient.from_gateway_bot(
             self, set_global_commands=Config.env("HOME_GUILD", int),
         ).load_modules()
 
         # Attach the Bot to the Client
-        self.client.bot = self
+        assert hasattr(self.client, "bot")
+        setattr(self.client, "bot", self)
 
     @property
     def yes(self) -> hikari.KnownCustomEmoji:

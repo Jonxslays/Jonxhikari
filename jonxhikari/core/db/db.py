@@ -36,7 +36,7 @@ class Database:
     async def sync(self) -> None:
         await self.commit()
 
-    async def field(self, command: str, *values: object) -> str | int | None:
+    async def field(self, command: str, *values: object) -> t.Any:
         cur = await self.cxn.execute(command, tuple(values))
         self._calls += 1
 
@@ -45,19 +45,20 @@ class Database:
 
         return None
 
-    async def record(self, command: str, *values: object) -> sqlite3.Row | None:
+    async def record(self, command: str, *values: object) -> t.Any:
         cur = await self.cxn.execute(command, tuple(values))
         self._calls += 1
 
         return await cur.fetchone()
 
-    async def records(self, command: str, *values: object) -> t.Iterable[sqlite3.Row]:
+    async def records(self, command: str, *values: object) -> t.Iterable[t.Any]:
         cur = await self.cxn.execute(command, tuple(values))
         self._calls += 1
+        data = await cur.fetchall()
 
         return await cur.fetchall()
 
-    async def column(self, command: str, *values: object) -> list[t.Union[str, int, None]]:
+    async def column(self, command: str, *values: object) -> t.List[t.Union[str, int, None]]:
         cur = await self.cxn.execute(command, tuple(values))
         self._calls += 1
 

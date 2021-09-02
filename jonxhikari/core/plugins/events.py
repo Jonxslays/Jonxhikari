@@ -1,14 +1,16 @@
 import datetime
 
-from hikari.messages import Attachment
-import lightbulb
 import hikari
+import lightbulb
 import tanjun
+from hikari.messages import Attachment
+
+import jonxhikari
 
 
 class Events(lightbulb.Plugin):
     """Jonxhikaris pseudo event handler."""
-    def __init__(self, bot: lightbulb.Bot) -> None:
+    def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         super().__init__()
 
@@ -35,9 +37,9 @@ class Events(lightbulb.Plugin):
         await self.bot.errors.parse(event.exception)
 
 
-def load(bot: lightbulb.Bot) -> None:
+def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Events(bot))
 
 
-def unload(bot: lightbulb.Bot) -> None:
+def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Events")

@@ -1,11 +1,11 @@
 import typing as t
 
-from lightbulb import errors as le
-from hikari import errors as he
-
 import lightbulb
 import hikari
 import tanjun
+from lightbulb import errors as lb_errors
+
+import jonxhikari
 
 
 DualCtxT = t.Union[lightbulb.Context, tanjun.abc.Context]
@@ -16,12 +16,14 @@ class WTFError(Exception):
 
 
 class Errors:
-
     def embed(self, ctx: DualCtxT, message: str) -> hikari.Embed:
+        desc : str
+
         if isinstance(ctx, lightbulb.Context):
             desc = f"{ctx.bot.no} {message}"
 
         elif isinstance(ctx, tanjun.abc.Context):
+            assert isinstance(ctx.client, jonxhikari.SlashClient)
             desc = f"{ctx.client.bot.no} {message}"
 
         embed: hikari.Embed = ctx.client.bot.embeds.build(
@@ -31,7 +33,6 @@ class Errors:
         )
 
         return embed
-        raise self.wtf("Context in error embed was invalid... Somehow!")
 
     @staticmethod
     def wtf(message: str) -> WTFError:
@@ -42,44 +43,49 @@ class Errors:
         print(exc)
         raise exc
 
-    @staticmethod
     async def parse_tanjun(
+        self,
         exc: t.Union[tanjun.CommandError, Exception],
         ctx: tanjun.abc.Context
     ) -> None:
         if isinstance(exc, (tanjun.NotEnoughArgumentsError, tanjun.TooManyArgumentsError)):
-            await ctx.respond(f"**ERROR**```{exc.message}```")
+            await ctx.respond(self.embed(ctx, f"**ERROR**```{exc.message}```"))
             raise exc
 
         elif isinstance(exc, tanjun.MissingDependencyError):
-            await ctx.respond(f"**ERROR**```{exc.message}```")
+            await ctx.respond(self.embed(ctx, f"**ERROR**```{exc.message}```"))
             raise exc
 
         else:
             print(exc)
             raise exc
 
-
-    @staticmethod
     async def parse_lightbulb(
-        exc: t.Union[le.CommandError, Exception],
+        self,
+        exc: t.Union[lb_errors.CommandError, Exception],
         ctx: lightbulb.Context
     ) -> None:
-        if isinstance(exc, le.CommandNotFound):
+        if isinstance(exc, lb_errors.CommandNotFound):
             pass
 
-        elif isinstance(exc, le.NotEnoughArguments):
+        elif isinstance(exc, lb_errors.NotEnoughArguments):
             args = "\n".join(f" > {a}" for a in exc.missing_args)
-            await ctx.respond(f"**ERROR**\nRequired argument(s) were missing:\n```{args}```")
+            await ctx.respond(
+                self.embed(ctx, f"**ERROR**\nRequired argument(s) were missing:\n```{args}```")
+            )
             raise exc
 
-        elif isinstance(exc, le.MissingRequiredPermission):
+        elif isinstance(exc, lb_errors.MissingRequiredPermission):
             perms = "\n".join(f" > {p.name}" for p in exc.permissions.split()).replace("_", " ")
-            await ctx.respond(f"**ERROR**\n{exc.text}.```{perms}```")
+            await ctx.respond(self.embed(ctx, f"**ERROR**\n{exc.text}.```{perms}```"))
             raise exc
 
-        elif isinstance(exc, le.ConverterFailure):
-            await ctx.respond(f"**ERROR**\nConversion of arguments failed during `{ctx.command.qualified_name}` command.")
+        elif isinstance(exc, lb_errors.ConverterFailure):
+            await ctx.respond(
+                self.embed(
+                    ctx, f"**ERROR**\nConversion of arguments failed during `{ctx.command.qualified_name}` command."
+                )
+            )
             raise exc
 
         else:

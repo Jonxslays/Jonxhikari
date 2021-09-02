@@ -3,8 +3,6 @@ from time import time
 
 import tanjun
 
-from jonxhikari import SlashClient
-
 
 component = tanjun.Component()
 
@@ -16,8 +14,9 @@ async def ping_command(ctx: tanjun.abc.Context) -> None:
     await ctx.respond("uwu-owo")
     end = time()
 
+    assert ctx.client.shards is not None
     await ctx.edit_initial_response(
-        f"**Gateway**: {ctx.client.bot.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms",
+        f"**Gateway**: {ctx.client.shards.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms",
     )
 
 

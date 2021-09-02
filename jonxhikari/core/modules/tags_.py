@@ -1,4 +1,5 @@
 import asyncio
+import sqlite3
 import typing as t
 
 import hikari
@@ -32,6 +33,7 @@ tag_group = component.with_slash_command(
 async def tag_get_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
     """Gets a tag from the database."""
     query = "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = ? AND TagName = ? RETURNING TagContent"
+    assert isinstance(ctx.client, SlashClient)
 
     if content := await ctx.client.bot.db.field(query, ctx.guild_id, name.lower()):
         await ctx.respond(content)
@@ -51,6 +53,8 @@ async def tag_info_slash_command(
     member: t.Optional[hikari.InteractionMember]
 ) -> None:
     """Gets info about a tag, or a members tags."""
+    assert isinstance(ctx.client, SlashClient)
+
     if (not name and not member):
         await ctx.respond(
             ctx.client.errors.embed(ctx, "Please pass a tag name or member to get tag information about.")
@@ -64,7 +68,7 @@ async def tag_info_slash_command(
     elif name:
         query = "SELECT TagOwner, Uses FROM tags WHERE TagName = ? AND GuildID = ?"
 
-        if not (tag_info := await ctx.client.bot.db.record(query, name.lower(), ctx.guild_id)):
+        if not (tag_name_info := await ctx.client.bot.db.record(query, name.lower(), ctx.guild_id)):
             await ctx.respond(
                 ctx.client.errors.embed(ctx, f"No `{name}` tag exists.")
             )
@@ -77,8 +81,8 @@ async def tag_info_slash_command(
                 footer="BYPASS",
                 description=f"Requested tag: `{name}`""",
                 fields=[
-                    ("Owner", f"<@!{tag_info[0]}>", True),
-                    ("Uses", tag_info[1], True),
+                    ("Owner", f"<@!{tag_name_info[0]}>", True),
+                    ("Uses", tag_name_info[1], True),
                 ]
             )
         )
@@ -86,15 +90,16 @@ async def tag_info_slash_command(
     elif member:
         query = "SELECT TagName, Uses FROM tags WHERE TagOwner = ? AND GuildID = ?"
 
-        if not (tag_info := await ctx.client.bot.db.records(query, member.id, ctx.guild_id)):
+        if not (tag_member_info := await ctx.client.bot.db.records(query, member.id, ctx.guild_id)):
             await ctx.respond(
                 ctx.client.errors.embed(ctx, f"{member.mention} hasn't created any tags yet. Boo!")
             )
             return None
 
+        assert tag_member_info is not None
         fields = [
-            ("Name", "\n".join(t[0] for t in tag_info), True),
-            ("Uses", "\n".join(str(t[1]) for t in tag_info), True),
+            ("Name", "\n".join(t[0] for t in tag_member_info), True),
+            ("Uses", "\n".join(str(t[1]) for t in tag_member_info), True),
         ]
 
         await ctx.respond(
@@ -112,21 +117,26 @@ async def tag_info_slash_command(
 async def tag_list__slash_command(ctx: tanjun.abc.Context) -> None:
     """Command for listing all tags."""
     query = "SELECT TagName from tags WHERE GuildID = ?"
+    assert isinstance(ctx.client, SlashClient)
+    tags = await ctx.client.bot.db.column(query, ctx.guild_id)
+
 
     # If there are no tags stored
-    if len(tags := await ctx.client.bot.db.column(query, ctx.guild_id)) == 0:
+    if not len(tags):
         await ctx.respond(
             ctx.client.errors.embed(ctx, "No tags for this guild yet, make one!")
         )
         return None
 
     assert ctx.guild_id is not None
+    description: t.Iterable[str] = (t for t in tags)
+
     await ctx.respond(
         ctx.client.embeds.build(
             ctx=ctx,
             footer="BYPASS",
             title=f"{ctx.client.bot.yes} Tags for {(await ctx.client.rest.fetch_guild(ctx.guild_id)).name}",
-            description=f"```{', '.join(t for t in tags)}```",
+            description=f"```{description}```",
         )
     )
 
@@ -137,6 +147,7 @@ async def tag_list__slash_command(ctx: tanjun.abc.Context) -> None:
 @tanjun.as_slash_command("create", "Create a new tag.")
 async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: str) -> None:
     """Command for creating a new tag."""
+    assert isinstance(ctx.client, SlashClient)
 
     # Can't create a reserved tag
     if (name := name.lower()) in RESERVED_TAGS:
@@ -178,6 +189,7 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
 async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: str) -> None:
     """Command for editing a tag you own."""
     name = name.lower()
+    assert isinstance(ctx.client, SlashClient)
 
     if owner := await ctx.client.bot.db.field(
         "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?",
@@ -250,6 +262,7 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
 async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member: hikari.InteractionMember) -> None:
     """Command for transferring a tag you own to someone else."""
     name = name.lower()
+    assert isinstance(ctx.client, SlashClient)
 
     if owner := await ctx.client.bot.db.field(
         "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name,
@@ -287,6 +300,7 @@ async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member:
 async def tag_delete_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
     """Command for deleting a tag you own."""
     name = name.lower()
+    assert isinstance(ctx.client, SlashClient)
 
     if owner := await ctx.client.bot.db.field(
         "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name

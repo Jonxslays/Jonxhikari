@@ -7,14 +7,14 @@ from time import time
 import hikari
 import lightbulb
 
-from jonxhikari.core.utils import Lines
+import jonxhikari
 
 
 class Meta(lightbulb.Plugin):
     """Devoted to meta stats etc."""
-    def __init__(self, bot: lightbulb.Bot) -> None:
+    def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
-        self.lines = Lines()
+        self.lines = jonxhikari.Lines()
         super().__init__()
 
     @lightbulb.command(name="ping")
@@ -77,9 +77,9 @@ class Meta(lightbulb.Plugin):
         )
 
 
-def load(bot: lightbulb.Bot) -> None:
+def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Meta(bot))
 
 
-def unload(bot: lightbulb.Bot) -> None:
+def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Meta")

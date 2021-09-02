@@ -4,10 +4,12 @@ import lightbulb
 import hikari
 from lightbulb import errors
 
+import jonxhikari
+
 
 class Admin(lightbulb.Plugin):
     """Dedicated to Admin only commands."""
-    def __init__(self, bot: lightbulb.Bot) -> None:
+    def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         super().__init__()
 
@@ -33,7 +35,7 @@ class Admin(lightbulb.Plugin):
 
 class Owner(lightbulb.Plugin):
     """Dedicated to Owner only commands."""
-    def __init__(self, bot: lightbulb.Bot) -> None:
+    def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         self.plugin_path = "jonxhikari.core.plugins."
         super().__init__()
@@ -126,11 +128,11 @@ class Owner(lightbulb.Plugin):
         await self.bot.close()
 
 
-def load(bot: lightbulb.Bot) -> None:
+def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Admin(bot))
     bot.add_plugin(Owner(bot))
 
 
-def unload(bot: lightbulb.Bot) -> None:
+def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Admin")
     bot.remove_plugin("Owner")

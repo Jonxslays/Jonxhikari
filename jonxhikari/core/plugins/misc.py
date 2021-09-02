@@ -1,6 +1,8 @@
-import lightbulb
 import hikari
+import lightbulb
 import time
+
+import jonxhikari
 
 
 class Misc(lightbulb.Plugin):
@@ -10,9 +12,9 @@ class Misc(lightbulb.Plugin):
         super().__init__()
 
 
-def load(bot: lightbulb.Bot) -> None:
+def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Misc(bot))
 
 
-def unload(bot: lightbulb.Bot) -> None:
+def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Misc")

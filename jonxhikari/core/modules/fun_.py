@@ -9,7 +9,7 @@ from jonxhikari import Config, SlashClient
 component = tanjun.Component()
 
 
-async def call_cat_api(client: tanjun.abc.Client) -> str:
+async def call_cat_api(client: SlashClient) -> str:
     url = "https://api.thecatapi.com/v1/images/search"
     headers = {"x-api-key": Config.env("CAT_API_KEY")}
 
@@ -27,8 +27,9 @@ async def call_cat_api(client: tanjun.abc.Client) -> str:
 @component.with_slash_command
 @tanjun.as_slash_command("kitties", "Fetch a random kitty")
 async def kitties_command(ctx: tanjun.abc.Context) -> None:
+    assert isinstance(ctx.client, SlashClient)
     if not (url := await call_cat_api(ctx.client)):
-        await ctx.respond("Unable to fetch a kitty right now :(")
+        await ctx.respond(ctx.client.errors.embed(ctx.client, "Unable to fetch a kitty right now :("))
         return None
 
     e = ctx.client.bot.embeds.build(

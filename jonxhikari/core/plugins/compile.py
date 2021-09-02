@@ -1,13 +1,15 @@
+import asyncio
 import re
 
-import asyncio
 import lightbulb
 import hikari
+
+import jonxhikari
 
 
 class Compile(lightbulb.Plugin):
     """Runs code through the Piston api."""
-    def __init__(self, bot: lightbulb.Bot) -> None:
+    def __init__(self, bot: jonxhikari.Bot) -> None:
         super().__init__()
         self.bot = bot
         self.langs: list[str] = []
@@ -101,9 +103,9 @@ class Compile(lightbulb.Plugin):
         )
 
 
-def load(bot: lightbulb.Bot) -> None:
+def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Compile(bot))
 
 
-def unload(bot: lightbulb.Bot) -> None:
+def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Compile")

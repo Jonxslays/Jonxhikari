@@ -6,9 +6,13 @@ from jonxhikari import Bot
 
 def main() -> None:
     uvloop.install()
-
     bot = Bot(__version__)
-    bot.run()
+
+    try:
+        bot.run()
+    except KeyboardInterrupt:
+        print("Exiting...")
+        bot.close()
 
 
 if __name__ == "__main__":

@@ -4,16 +4,17 @@ from pathlib import Path
 import hikari
 import tanjun
 
-from jonxhikari.core.utils import Embeds, Errors
+import jonxhikari
 
 
 class SlashClient(tanjun.Client):
     """Client for handling Slash Commands."""
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        self.errors = Errors()
-        self.embeds = Embeds()
+        self.errors = jonxhikari.Errors()
+        self.embeds = jonxhikari.Embeds()
+        self.bot: jonxhikari.Bot = kwargs["shard"]
 
-        super().__init__(*args, **kwargs)
+        super(SlashClient, self).__init__(*args, **kwargs)
         print("SlashClient initialized!")
 
     def load_modules(self, *modules: t.Union[str, Path]) -> "SlashClient":
@@ -25,26 +26,26 @@ class SlashClient(tanjun.Client):
     # Failed attempt
     # TODO might come back to this
     #
-    # @classmethod
-    # def from_gateway_bot(
-    #     cls,
-    #     bot: hikari.traits.GatewayBotAware,
-    #     /,
-    #     *,
-    #     event_managed: bool = True,
-    #     mention_prefix: bool = False,
-    #     set_global_commands: t.Union[hikari.Snowflake, bool] = False,
-    # ) -> "SlashClient":
-    #     return (
-    #         cls(
-    #             rest=bot.rest,
-    #             cache=bot.cache,
-    #             events=bot.event_manager,
-    #             shard=bot,
-    #             event_managed=event_managed,
-    #             mention_prefix=mention_prefix,
-    #             set_global_commands=set_global_commands,
-    #         )
-    #         .set_human_only()
-    #         .set_hikari_trait_injectors(bot)
-    #     )
+    @classmethod
+    def from_gateway_bot(
+        cls,
+        bot: hikari.traits.GatewayBotAware,
+        /,
+        *,
+        event_managed: bool = True,
+        mention_prefix: bool = False,
+        set_global_commands: t.Union[hikari.Snowflake, bool] = False,
+    ) -> "SlashClient":
+        return (
+            cls(
+                rest=bot.rest,
+                cache=bot.cache,
+                events=bot.event_manager,
+                shard=bot,
+                event_managed=event_managed,
+                mention_prefix=mention_prefix,
+                set_global_commands=set_global_commands,
+            )
+            .set_human_only()
+            .set_hikari_trait_injectors(bot)
+        )
