@@ -54,7 +54,6 @@ class Database:
     async def records(self, command: str, *values: object) -> t.Iterable[t.Any]:
         cur = await self.cxn.execute(command, tuple(values))
         self._calls += 1
-        data = await cur.fetchall()
 
         return await cur.fetchall()
 

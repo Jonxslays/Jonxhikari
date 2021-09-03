@@ -43,6 +43,7 @@ async def tag_get_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
         ctx.client.errors.embed(ctx, f"`{name}` is not a valid tag.")
     )
 
+
 @tag_group.with_command
 @tanjun.with_member_slash_option("member", "The member to get tags for.", default=None)
 @tanjun.with_str_slash_option("name", "The name of the tag to get.", default=None)
@@ -111,6 +112,7 @@ async def tag_info_slash_command(
                 fields=fields,
             )
         )
+
 
 @tag_group.with_command
 @tanjun.as_slash_command("list", "List this guilds tags.")
@@ -281,7 +283,7 @@ async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member:
                     footer="BYPASS",
                     description=(
                         f"{ctx.client.bot.yes} `{name}` tag transferred "
-                        "from {ctx.author.mention} to {member.mention}."
+                        f"from {ctx.author.mention} to {member.mention}."
                     )
                 )
             )
