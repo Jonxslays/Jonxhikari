@@ -17,7 +17,7 @@ class WTFError(Exception):
 
 class Errors:
     def embed(self, ctx: DualCtxT, message: str) -> hikari.Embed:
-        desc : str
+        desc: str
 
         if isinstance(ctx, lightbulb.Context):
             desc = f"{ctx.bot.no} {message}"

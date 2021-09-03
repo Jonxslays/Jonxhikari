@@ -1,3 +1,3 @@
-from .db import Database
+from .db import AsyncPGDatabase
 
-__all__ = ["Database"]
+__all__ = ["AsyncPGDatabase"]

@@ -32,16 +32,17 @@ tag_group = component.with_slash_command(
 @tanjun.as_slash_command("get", "Gets a tag from the database.")
 async def tag_get_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
     """Gets a tag from the database."""
-    query = "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = ? AND TagName = ? RETURNING TagContent"
     assert isinstance(ctx.client, SlashClient)
+    query = "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = $1 AND TagName = $2 RETURNING TagContent;"
 
-    if content := await ctx.client.bot.db.field(query, ctx.guild_id, name.lower()):
+    if content := await ctx.client.bot.pool.fetch(query, ctx.guild_id, name.lower()):
         await ctx.respond(content)
         return None
 
     await ctx.respond(
         ctx.client.errors.embed(ctx, f"`{name}` is not a valid tag.")
     )
+
 
 @tag_group.with_command
 @tanjun.with_member_slash_option("member", "The member to get tags for.", default=None)
@@ -66,9 +67,9 @@ async def tag_info_slash_command(
         )
 
     elif name:
-        query = "SELECT TagOwner, Uses FROM tags WHERE TagName = ? AND GuildID = ?"
+        query = "SELECT TagOwner, Uses FROM tags WHERE TagName = $1 AND GuildID = $2;"
 
-        if not (tag_name_info := await ctx.client.bot.db.record(query, name.lower(), ctx.guild_id)):
+        if not (tag_name_info := await ctx.client.bot.pool.row(query, name.lower(), ctx.guild_id)):
             await ctx.respond(
                 ctx.client.errors.embed(ctx, f"No `{name}` tag exists.")
             )
@@ -88,9 +89,9 @@ async def tag_info_slash_command(
         )
 
     elif member:
-        query = "SELECT TagName, Uses FROM tags WHERE TagOwner = ? AND GuildID = ?"
+        query = "SELECT TagName, Uses FROM tags WHERE TagOwner = $1 AND GuildID = $2;"
 
-        if not (tag_member_info := await ctx.client.bot.db.records(query, member.id, ctx.guild_id)):
+        if not (tag_member_info := await ctx.client.bot.pool.rows(query, member.id, ctx.guild_id)):
             await ctx.respond(
                 ctx.client.errors.embed(ctx, f"{member.mention} hasn't created any tags yet. Boo!")
             )
@@ -112,14 +113,14 @@ async def tag_info_slash_command(
             )
         )
 
+
 @tag_group.with_command
 @tanjun.as_slash_command("list", "List this guilds tags.")
 async def tag_list__slash_command(ctx: tanjun.abc.Context) -> None:
     """Command for listing all tags."""
-    query = "SELECT TagName from tags WHERE GuildID = ?"
     assert isinstance(ctx.client, SlashClient)
-    tags = await ctx.client.bot.db.column(query, ctx.guild_id)
-
+    query = "SELECT TagName FROM tags WHERE GuildID = $1;"
+    tags = await ctx.client.bot.pool.column(query, ctx.guild_id)
 
     # If there are no tags stored
     if not len(tags):
@@ -158,8 +159,8 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
         )
 
     # If someone tries to make an already made tag... yeah thats a use :kek:
-    elif owner := await ctx.client.bot.db.field(
-        "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = ? AND TagName = ? RETURNING TagOwner",
+    elif owner := await ctx.client.bot.pool.fetch(
+        "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = $1 AND TagName = $2 RETURNING TagOwner;",
         ctx.guild_id, name
     ):
         await ctx.respond(
@@ -170,8 +171,8 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
         return None
 
     # A successful tag creation
-    await ctx.client.bot.db.execute(
-        "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES (?, ?, ?, ?)",
+    await ctx.client.bot.pool.execute(
+        "INSERT INTO tags (guildid, tagowner, tagname, tagcontent) VALUES ($1, $2, $3, $4);",
         ctx.guild_id, ctx.author.id, name, content
     )
 
@@ -193,14 +194,14 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
     name = name.lower()
     assert isinstance(ctx.client, SlashClient)
 
-    if owner := await ctx.client.bot.db.field(
-        "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?",
+    if owner := await ctx.client.bot.pool.fetch(
+        "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;",
         ctx.guild_id, name
     ):
         # A successful tag edit
         if owner == ctx.author.id:
-            await ctx.client.bot.db.execute(
-                "UPDATE tags SET TagContent = ? WHERE TagName = ? AND GuildID = ?",
+            await ctx.client.bot.pool.execute(
+                "UPDATE tags SET TagContent = $1 WHERE TagName = $2 AND GuildID = $3;",
                 content, name, ctx.guild_id
             )
             await ctx.respond(
@@ -225,7 +226,8 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
 
     # Checks the user and channel for validity
     def predicate(e: hikari.GuildMessageCreateEvent) -> bool:
-        return e.author_id == ctx.author.id and ctx.channel_id == e.channel_id
+        condition: bool = e.author_id == ctx.author.id and ctx.channel_id == e.channel_id
+        return condition
 
     try:
         e = await ctx.client.bot.wait_for(hikari.GuildMessageCreateEvent, 30, predicate)
@@ -238,8 +240,8 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
     else:
         # They do want to make a new tag
         if e.content.startswith("y" or "Y"):
-            await ctx.client.bot.db.execute(
-                "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES (?, ?, ?, ?)",
+            await ctx.client.bot.pool.execute(
+                "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES ($1, $2, $3, $4);",
                 ctx.guild_id, ctx.author.id, name, content
             )
 
@@ -266,13 +268,13 @@ async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member:
     name = name.lower()
     assert isinstance(ctx.client, SlashClient)
 
-    if owner := await ctx.client.bot.db.field(
-        "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name,
+    if owner := await ctx.client.bot.pool.fetch(
+        "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;", ctx.guild_id, name,
     ):
         # A successful transfer
         if owner == ctx.author.id:
-            await ctx.client.bot.db.execute(
-                "UPDATE tags SET TagOwner = ? WHERE GuildID = ? and TagName = ?",
+            await ctx.client.bot.pool.execute(
+                "UPDATE tags SET TagOwner = $1 WHERE GuildID = $2 AND TagName = $3;",
                 member.id, ctx.guild_id, name
             )
             await ctx.respond(
@@ -281,7 +283,7 @@ async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member:
                     footer="BYPASS",
                     description=(
                         f"{ctx.client.bot.yes} `{name}` tag transferred "
-                        "from {ctx.author.mention} to {member.mention}."
+                        f"from {ctx.author.mention} to {member.mention}."
                     )
                 )
             )
@@ -307,13 +309,13 @@ async def tag_delete_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
     name = name.lower()
     assert isinstance(ctx.client, SlashClient)
 
-    if owner := await ctx.client.bot.db.field(
-        "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name
+    if owner := await ctx.client.bot.pool.fetch(
+        "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;", ctx.guild_id, name
     ):
         # A successful deletion
         if owner == ctx.author.id:
-            await ctx.client.bot.db.execute(
-                "DELETE FROM tags WHERE GuildID = ? and TagName = ?", ctx.guild_id, name
+            await ctx.client.bot.pool.execute(
+                "DELETE FROM tags WHERE GuildID = $1 AND TagName = $2;", ctx.guild_id, name
             )
             await ctx.respond(
                 ctx.client.embeds.build(

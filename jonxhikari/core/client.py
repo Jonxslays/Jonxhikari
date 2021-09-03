@@ -1,42 +1,49 @@
 import typing as t
 from pathlib import Path
 
+import asyncpg
 import hikari
 import tanjun
 
-import jonxhikari
+from jonxhikari import core
 
 
 class SlashClient(tanjun.Client):
     """Client for handling Slash Commands."""
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
-        self.errors = jonxhikari.Errors()
-        self.embeds = jonxhikari.Embeds()
-        self.bot: jonxhikari.Bot = kwargs["shard"]
+        self.errors = core.Errors()
+        self.embeds = core.Embeds()
+        self.bot: core.Bot = kwargs["shard"]
 
-        super(SlashClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         print("SlashClient initialized!")
 
     def load_modules(self, *modules: t.Union[str, Path]) -> "SlashClient":
         """Loads Tanjun modules."""
-        return super().load_modules(
+        super().load_modules(
             *(f"jonxhikari.core.modules.{p.stem}" for p in Path(".").glob("./jonxhikari/core/modules/*.py"))
         )
 
-    # Failed attempt
-    # TODO might come back to this
+        return self
+
+    #
+    # TODO might come back to this.
+    # Its still not really sorted.
+    # Types are wonky and asserts
+    # all over the place blegh.
+    # >:(
     #
     @classmethod
     def from_gateway_bot(
         cls,
-        bot: hikari.traits.GatewayBotAware,
+        bot: hikari.GatewayBotAware,
         /,
         *,
         event_managed: bool = True,
         mention_prefix: bool = False,
         set_global_commands: t.Union[hikari.Snowflake, bool] = False,
     ) -> "SlashClient":
-        return (
+        constructor: SlashClient = (
             cls(
                 rest=bot.rest,
                 cache=bot.cache,
@@ -49,3 +56,5 @@ class SlashClient(tanjun.Client):
             .set_human_only()
             .set_hikari_trait_injectors(bot)
         )
+
+        return constructor

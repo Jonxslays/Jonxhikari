@@ -1,4 +1,6 @@
+import logging
 import typing as t
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import aiohttp
@@ -7,7 +9,7 @@ import hikari
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Config
-from jonxhikari.core import Database
+from jonxhikari.core import AsyncPGDatabase
 from jonxhikari.core import Embeds
 from jonxhikari.core import Errors
 from jonxhikari.core import SlashClient
@@ -17,18 +19,16 @@ class Bot(lightbulb.Bot):
     def __init__(self, version: str) -> None:
         self._plugins_dir = "./jonxhikari/core/plugins"
         self._plugins = [p.stem for p in Path(".").glob(f"{self._plugins_dir}/*.py")]
-        self._dynamic = "./jonxhikari/data/dynamic"
-        self._static = "./jonxhikari/data/static"
 
         self.version = version
         self._invokes = 0
-        self.guilds: dict[int, dict[str, t.Union[int, str]]] = {}
+        self.guilds: dict[int, dict[str, str]] = {}
 
         self.scheduler = AsyncIOScheduler()
         self.log = Config.logging()
         self.errors = Errors()
         self.embeds = Embeds()
-        self.db = Database(self)
+        self.pool = AsyncPGDatabase()
 
         # Initiate lightbulb Bot superclass
         super().__init__(
@@ -56,20 +56,16 @@ class Bot(lightbulb.Bot):
             self, set_global_commands=Config.env("HOME_GUILD", int),
         ).load_modules()
 
-        # Attach the Bot to the Client
-        assert hasattr(self.client, "bot")
-        setattr(self.client, "bot", self)
-
     @property
     def yes(self) -> hikari.KnownCustomEmoji:
         YES = 853792470651502603
 
-        if cached_yes := self.cache.get_emoji(YES):
-            assert isinstance(cached_yes, hikari.KnownCustomEmoji)
+        cached_yes = self.cache.get_emoji(YES)
+        if isinstance(cached_yes, hikari.KnownCustomEmoji):
             return cached_yes
 
-        if fetched_yes := self.rest.fetch_emoji(Config.env("HOME_GUILD", int), YES):
-            assert isinstance(fetched_yes, hikari.KnownCustomEmoji)
+        fetched_yes = self.rest.fetch_emoji(Config.env("HOME_GUILD", int), YES)
+        if isinstance(fetched_yes, hikari.KnownCustomEmoji):
             return fetched_yes
 
         # We should never get here, but if so
@@ -79,12 +75,12 @@ class Bot(lightbulb.Bot):
     def no(self) -> hikari.KnownCustomEmoji:
         NO = 853792496118267954
 
-        if cached_no := self.cache.get_emoji(NO):
-            assert isinstance(cached_no, hikari.KnownCustomEmoji)
+        cached_no = self.cache.get_emoji(NO)
+        if isinstance(cached_no, hikari.KnownCustomEmoji):
             return cached_no
 
-        if fetched_no := self.rest.fetch_emoji(Config.env("HOME_GUILD", int), NO):
-            assert isinstance(fetched_no, hikari.KnownCustomEmoji)
+        fetched_no = self.rest.fetch_emoji(Config.env("HOME_GUILD", int), NO)
+        if isinstance(fetched_no, hikari.KnownCustomEmoji):
             return fetched_no
 
         # We should never get here, but if so
@@ -93,22 +89,16 @@ class Bot(lightbulb.Bot):
     async def on_guild_available(self, event: hikari.GuildAvailableEvent) -> None:
         """fires on new guild join, on startup, and after disconnect"""
         if event.guild_id not in self.guilds:
-            await self.db.execute(
-                "INSERT OR IGNORE INTO guilds (GuildID) VALUES (?)",
+            await self.pool.execute(
+                "INSERT INTO guilds (GuildID) VALUES ($1) ON CONFLICT DO NOTHING;",
                 event.guild_id
             )
 
     async def on_starting(self, _: hikari.StartingEvent) -> None:
         """Fires before bot is connected. Blocks on_started until complete."""
         await self.db.connect()
+        await self.pool.connect()
         self.session = aiohttp.ClientSession()
-
-        # List of tuples containing guild ID and prefix
-        for guild in await self.db.records("SELECT GuildID, Prefix FROM guilds"):
-            # Cache prefixes into self.guilds
-            self.guilds[guild[0]] = {
-                "prefix": guild[1]
-            }
 
         # Load plugins from Lightbulb
         for plugin in self._plugins:
@@ -116,32 +106,39 @@ class Bot(lightbulb.Bot):
 
     async def on_started(self, _: hikari.StartedEvent) -> None:
         """Fires once bot is fully connected"""
+
+        # List of tuples containing guild ID and prefix or None
+        guild_prefix = await self.pool.rows("SELECT GuildID, Prefix FROM guilds;")
+
+        if guild_prefix is not None:
+            for guild, prefix in guild_prefix:
+                # Cache prefixes into self.guilds
+                self.guilds[guild] = {
+                    "prefix": prefix
+                }
+
         await self.db.sync()
         self.scheduler.start()
         self.add_check(self._dm_command)
 
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""
-        self.scheduler.shutdown()
+        await self.pool.close()
         await self.session.close()
-        await self.db.close()
+        self.scheduler.shutdown()
 
     async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
         """Grabs a prefix to be used in a particular context"""
-        if not message.guild_id:
-            return "$"
-
         if (id_ := message.guild_id) in self.guilds:
-            cached_p = self.guilds[id_]["prefix"]
-            assert isinstance(cached_p, str)
+            cached_p: str = self.guilds[id_]["prefix"]
             return cached_p
 
-        if not await self._dm_command(message):
-            fetched_p = await self.db.field("SELECT Prefix FROM guilds WHERE GuildID = ?", id_)
-            assert isinstance(fetched_p, str)
+        elif not await self._dm_command(message):
+            fetched_p: str = await self.pool.fetch("SELECT Prefix FROM guilds WHERE GuildID = $1;", id_)
             return fetched_p
 
-        return "$"
+        else:
+            return "$"
 
     #TODO Find a better way. guild_id may not be cached.
     async def _dm_command(self, message: hikari.Message) -> bool:
