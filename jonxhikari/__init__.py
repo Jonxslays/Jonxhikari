@@ -6,7 +6,7 @@ from .core import Database
 from .core import SlashClient
 from .core import Bot
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 __all__ = [
     "Bot",
