@@ -129,7 +129,7 @@ async def tag_list__slash_command(ctx: tanjun.abc.Context) -> None:
         return None
 
     assert ctx.guild_id is not None
-    description: t.Iterable[str] = (t for t in tags)
+    description: str = "\n".join(str(t) for t in tags)
 
     await ctx.respond(
         ctx.client.embeds.build(
@@ -152,7 +152,9 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
     # Can't create a reserved tag
     if (name := name.lower()) in RESERVED_TAGS:
         await ctx.respond(
-            ctx.client.errors.embed(ctx, f"That tag name is reserved. All of these are: ```{', '.join(RESERVED_TAGS)}```")
+            ctx.client.errors.embed(
+                ctx, f"That tag name is reserved. All of these are: ```{', '.join(RESERVED_TAGS)}```"
+            )
         )
 
     # If someone tries to make an already made tag... yeah thats a use :kek:
@@ -277,7 +279,10 @@ async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member:
                 ctx.client.embeds.build(
                     ctx=ctx,
                     footer="BYPASS",
-                    description=f"{ctx.client.bot.yes} `{name}` tag transferred from {ctx.author.mention} to {member.mention}.",
+                    description=(
+                        f"{ctx.client.bot.yes} `{name}` tag transferred "
+                        "from {ctx.author.mention} to {member.mention}."
+                    )
                 )
             )
             return None

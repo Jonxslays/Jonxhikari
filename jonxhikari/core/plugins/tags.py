@@ -34,7 +34,9 @@ class Tags(lightbulb.Plugin):
             await ctx.respond("No tags for this guild yet, make one!", reply=True)
             return None
 
-        await ctx.respond(f"```{', '.join(t for t in tags)}```")
+        description: str = ', '.join(str(t) for t in tags)
+
+        await ctx.respond(f"```{description}```")
 
     @tag_group.command(name="create")
     async def tag_create_cmd(self, ctx: lightbulb.Context, name: str, *, content: str) -> None:
