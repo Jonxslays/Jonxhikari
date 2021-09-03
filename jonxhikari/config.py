@@ -1,6 +1,6 @@
 import logging
 import typing as t
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import RotatingFileHandler
 from os import environ
 
 import dotenv
@@ -38,9 +38,9 @@ class Config:
         log = logging.getLogger("root")
         log.setLevel(logging.INFO)
 
-        trfh = TimedRotatingFileHandler(
+        rfh = RotatingFileHandler(
             "./jonxhikari/data/logs/main.log",
-            when="D", interval=3, encoding="utf-8",
+            maxBytes=512000, encoding="utf-8",
             backupCount=10,
         )
 
@@ -49,8 +49,8 @@ class Config:
             datefmt="%Y-%m-%d %H:%M:%S",
         )
 
-        trfh.setFormatter(ff)
-        trfh.addFilter(DatabaseLoggingFilter())
-        log.addHandler(trfh)
+        rfh.setFormatter(ff)
+        rfh.addFilter(DatabaseLoggingFilter())
+        log.addHandler(rfh)
 
         return log

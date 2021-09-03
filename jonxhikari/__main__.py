@@ -7,12 +7,7 @@ from jonxhikari import Bot
 def main() -> None:
     uvloop.install()
     bot = Bot(__version__)
-
-    try:
-        bot.run()
-    except KeyboardInterrupt:
-        print("Exiting...")
-        bot.close()
+    bot.run()
 
 
 if __name__ == "__main__":
