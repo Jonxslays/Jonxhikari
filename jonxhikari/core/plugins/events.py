@@ -17,12 +17,14 @@ class Events(lightbulb.Plugin):
     @lightbulb.plugins.listener()
     async def on_cmd(self, _: lightbulb.CommandCompletionEvent) -> None:
         """Fires on completion of a command."""
-        self.bot._invokes += 1
+        self.bot.invokes += 1
+        self.bot.invokes += 1
 
     @lightbulb.plugins.listener()
     async def on_interaction(self, event: hikari.InteractionCreateEvent) -> None:
         """Fires on creations of an interaction."""
-        self.bot._invokes += 1
+        self.bot.invokes += 1
+        self.bot.invokes += 1
         # TODO research interaction events on a lower level to
         # prevent this from firing multiple times per command
 
