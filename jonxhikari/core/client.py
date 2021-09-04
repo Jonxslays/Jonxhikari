@@ -1,7 +1,6 @@
 import typing as t
 from pathlib import Path
 
-import asyncpg
 import hikari
 import tanjun
 

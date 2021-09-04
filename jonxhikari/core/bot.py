@@ -13,6 +13,7 @@ from jonxhikari.core import Errors
 from jonxhikari.core import SlashClient
 
 
+
 class Bot(lightbulb.Bot):
     def __init__(self, version: str) -> None:
         self._plugins_dir = "./jonxhikari/core/plugins"

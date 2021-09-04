@@ -1,5 +1,4 @@
 import asyncio
-import os
 import typing as t
 
 import asyncpg
@@ -20,7 +19,7 @@ class AsyncPGDatabase:
         self.schema = "./jonxhikari/data/static/build.sql"
 
     async def connect(self) -> None:
-        """""Opens a connection pool."""
+        """Opens a connection pool."""
         self.pool = await asyncpg.create_pool(
             user = self.user,
             host = self.host,
@@ -36,8 +35,8 @@ class AsyncPGDatabase:
         """Closes the connection pool."""
         await self.pool.close()
 
-    def lock(func: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]: # type: ignore
-        """A decorator for all database pool acquisitions.
+    def with_connection(func: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]: # type: ignore
+        """A decorator used to acquire a connection from the pool.
 
         Args:
             func (t.Callable[..., t.Any]): The function we are wrapping.
@@ -63,7 +62,7 @@ class AsyncPGDatabase:
 
         return wrapper
 
-    @lock
+    @with_connection
     async def fetch(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.Optional[t.Any]:
         """Read 1 field of applicable data.
 
@@ -77,7 +76,7 @@ class AsyncPGDatabase:
         query = await conn.prepare(q)
         return await query.fetchval(*values)
 
-    @lock
+    @with_connection
     async def row(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.Optional[t.List[t.Any]]:
         """Read 1 row of applicable data.
 
@@ -95,7 +94,7 @@ class AsyncPGDatabase:
 
         return None
 
-    @lock
+    @with_connection
     async def rows(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.Optional[t.List[t.Iterable[t.Any]]]:
         """Read all rows of applicable data.
 
@@ -113,7 +112,7 @@ class AsyncPGDatabase:
 
         return None
 
-    @lock
+    @with_connection
     async def column(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.List[t.Any]:
         """Read a single column of applicable data.
 
@@ -127,7 +126,7 @@ class AsyncPGDatabase:
         query = await conn.prepare(q)
         return [r[0] for r in await query.fetch(*values)]
 
-    @lock
+    @with_connection
     async def execute(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> None:
         """Execute a write operation on the database.
 
@@ -138,7 +137,7 @@ class AsyncPGDatabase:
         query = await conn.prepare(q)
         await query.fetch(*values)
 
-    @lock
+    @with_connection
     async def executemany(self, q: str, values: t.List[t.Iterable[t.Any]], conn: asyncpg.Connection) -> None:
         """Execute a write operation for each set of values.
 
@@ -150,9 +149,9 @@ class AsyncPGDatabase:
         query = await conn.prepare(q)
         await query.executemany(values)
 
-    @lock
+    @with_connection
     async def scriptexec(self, path: str, conn: asyncpg.Connection) -> None:
-        """Executes an sql script at a given path.
+        """Execute an sql script at a given path.
 
         Args:
             path (str): The path to the .sql file.
