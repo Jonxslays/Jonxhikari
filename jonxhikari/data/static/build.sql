@@ -18,6 +18,6 @@ CREATE TABLE IF NOT EXISTS starboard (
     GuildID bigint,
     StarMessageID bigint,
     Stars bigint DEFAULT 1,
-	FOREIGN KEY (GuildID) REFERENCES guilds(GuildID),
+    FOREIGN KEY (GuildID) REFERENCES guilds(GuildID),
     PRIMARY KEY (BaseMessageID, GuildID)
 );
