@@ -16,8 +16,8 @@ class Tags(lightbulb.Plugin):
     @lightbulb.group(name="tag")
     async def tag_group(self, ctx: lightbulb.Context, name: str) -> None:
         """Command group for managing guild specific tags."""
-        if content := await self.bot.db.field(
-            "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = ? AND TagName = ? RETURNING TagContent",
+        if content := await self.bot.pool.fetch(
+            "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = $1 AND TagName = $2 RETURNING TagContent;",
             ctx.guild_id, name.lower()
         ):
             await ctx.respond(content, reply=True)
@@ -28,9 +28,9 @@ class Tags(lightbulb.Plugin):
     @tag_group.command(name="list")
     async def tag_list_cmd(self, ctx: lightbulb.Context) -> None:
         """Command for listing all tags."""
-        query = "SELECT TagName from tags WHERE GuildID = ?"
+        query = "SELECT TagName from tags WHERE GuildID = $1;"
 
-        if len(tags := await self.bot.db.column(query, ctx.guild_id)) == 0:
+        if len(tags := await self.bot.pool.column(query, ctx.guild_id)) == 0:
             await ctx.respond("No tags for this guild yet, make one!", reply=True)
             return None
 
@@ -48,8 +48,8 @@ class Tags(lightbulb.Plugin):
             return None
 
         # If someone tries to make an already made tag... yeah thats a use :kek:
-        if owner := await self.bot.db.field(
-            "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = ? AND TagName = ? RETURNING TagOwner",
+        if owner := await self.bot.pool.fetch(
+            "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = $1 AND TagName = $2 RETURNING TagOwner;",
             ctx.guild_id, name
         ):
             await ctx.respond(
@@ -59,8 +59,8 @@ class Tags(lightbulb.Plugin):
             return None
 
         # A successful tag creation
-        await self.bot.db.execute(
-            "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES (?, ?, ?, ?)",
+        await self.bot.pool.execute(
+            "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES ($1, $2, $3, $4);",
             ctx.guild_id, ctx.author.id, name, content
         )
         await ctx.respond(f"**SUCCESS**\n`{name}` tag created by {ctx.author.mention}.", reply=True)
@@ -70,14 +70,14 @@ class Tags(lightbulb.Plugin):
         """Command for editing a tag you own."""
         name = name.lower()
 
-        if owner := await self.bot.db.field(
-            "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?",
+        if owner := await self.bot.pool.fetch(
+            "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;",
             ctx.guild_id, name
         ):
             # A successful tag edit
             if owner == ctx.author.id:
-                await self.bot.db.execute(
-                    "UPDATE tags SET TagContent = ? WHERE TagName = ? AND GuildID = ?",
+                await self.bot.pool.execute(
+                    "UPDATE tags SET TagContent = $1 WHERE TagName = $2 AND GuildID = $3;",
                     content, name, ctx.guild_id
                 )
                 await ctx.respond(f"**SUCCESS**\n`{name}` tag edited by {ctx.author.mention}.", reply=True)
@@ -85,7 +85,7 @@ class Tags(lightbulb.Plugin):
 
             # Author doesn't own the tag
             await ctx.respond(
-                f"**FAILURE**\n{self.bot.cache.get_member(ctx.guild_id, owner)} owns the `{name}` tag, not you."
+                f"**FAILURE**\n{ctx.author.mention} owns the `{name}` tag, not you."
             )
             return None
 
@@ -116,8 +116,8 @@ class Tags(lightbulb.Plugin):
 
             # They do want to make a new tag
             elif e.emoji_id == yes:
-                await self.bot.db.execute(
-                    "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES (?, ?, ?, ?)",
+                await self.bot.pool.execute(
+                    "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES ($1, $2, $3, $4);",
                     ctx.guild_id, ctx.author.id, name, content
                 )
                 await msg.edit(
@@ -130,13 +130,13 @@ class Tags(lightbulb.Plugin):
         """Command for transferring a tag you own to someone else."""
         name = name.lower()
 
-        if owner := await self.bot.db.field(
-            "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name
+        if owner := await self.bot.pool.fetch(
+            "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;", ctx.guild_id, name
         ):
             # A successful transfer
             if owner == ctx.author.id:
-                await self.bot.db.execute(
-                    "UPDATE tags SET TagOwner = ? WHERE GuildID = ? and TagName = ?",
+                await self.bot.pool.execute(
+                    "UPDATE tags SET TagOwner = $1 WHERE GuildID = $2 and TagName = $3;",
                     member.id, ctx.guild_id, name
                 )
                 await ctx.respond(
@@ -160,13 +160,13 @@ class Tags(lightbulb.Plugin):
         """Command for deleting a tag you own."""
         name = name.lower()
 
-        if owner := await self.bot.db.field(
-            "SELECT TagOwner FROM tags WHERE GuildID = ? AND TagName = ?", ctx.guild_id, name
+        if owner := await self.bot.pool.fetch(
+            "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;", ctx.guild_id, name
         ):
             # A successful deletion
             if owner == ctx.author.id:
-                await self.bot.db.execute(
-                    "DELETE FROM tags WHERE GuildID = ? and TagName = ?", ctx.guild_id, name
+                await self.bot.pool.execute(
+                    "DELETE FROM tags WHERE GuildID = $1 and TagName = $2;", ctx.guild_id, name
                 )
                 await ctx.respond(f"**SUCCESS**\n`{name}` tag deleted by {ctx.author.mention}.", reply=True)
                 return None

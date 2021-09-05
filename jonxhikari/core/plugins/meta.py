@@ -50,7 +50,7 @@ class Meta(lightbulb.Plugin):
             ("Jxhk", f"```{self.bot.version}```", True),
             ("Python", f"```{python_version()}```", True),
             ("Hikari", f"```{hikari.__version__}```", True),
-            ("Users here", f"```{len(self.bot.cache.get_members_view_for_guild(ctx.guild_id)):,}```", True),
+            ("Users here", f"```{len(self.bot.rest.fetch_members(ctx.guild_id)):,}```", True),
             ("Total users", f"```{len(self.bot.cache.get_users_view()):,}```", True),
             ("Servers", f"```{len(self.bot.guilds):,}```", True),
             ("Lines of code", f"```{self.lines.total:,}```", True),
