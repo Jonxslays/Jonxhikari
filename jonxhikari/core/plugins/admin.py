@@ -29,7 +29,7 @@ class Admin(lightbulb.Plugin):
             return None
 
         self.bot.guilds[ctx.guild_id]["prefix"] = _prefix
-        await self.bot.pool.execute("UPDATE guilds SET Prefix = $1 WHERE GuildID = $1;", _prefix, ctx.guild_id)
+        await self.bot.pool.execute("UPDATE guilds SET Prefix = $1 WHERE GuildID = $2;", _prefix, ctx.guild_id)
         await ctx.respond(f"Prefix successfully updated to: `{_prefix}`")
 
 

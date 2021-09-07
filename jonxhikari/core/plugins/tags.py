@@ -53,7 +53,7 @@ class Tags(lightbulb.Plugin):
             ctx.guild_id, name
         ):
             await ctx.respond(
-                f"**FAILURE**\nSorry, `{name}` was already created by {ctx.author.mention}. "
+                f"**FAILURE**\nSorry, `{name}` was already created by <@!{owner}>. "
                 "Try a different tag name.", reply=True
             )
             return None
@@ -85,7 +85,7 @@ class Tags(lightbulb.Plugin):
 
             # Author doesn't own the tag
             await ctx.respond(
-                f"**FAILURE**\n{ctx.author.mention} owns the `{name}` tag, not you."
+                f"**FAILURE**\n<@!{owner}> owns the `{name}` tag, not you."
             )
             return None
 

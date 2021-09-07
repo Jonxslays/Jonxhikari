@@ -95,7 +95,6 @@ class Bot(lightbulb.Bot):
 
     async def on_starting(self, _: hikari.StartingEvent) -> None:
         """Fires before bot is connected. Blocks on_started until complete."""
-        await self.db.connect()
         await self.pool.connect()
         self.session = aiohttp.ClientSession()
 
@@ -116,7 +115,6 @@ class Bot(lightbulb.Bot):
                     "prefix": prefix
                 }
 
-        await self.db.sync()
         self.scheduler.start()
         self.add_check(self._dm_command)
 

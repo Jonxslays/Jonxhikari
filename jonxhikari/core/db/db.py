@@ -16,7 +16,7 @@ class AsyncPGDatabase:
         self.user = Config.env("PG_USER")
         self.password = Config.env("PG_PASS")
         self.port = Config.env("PG_PORT", int)
-        self.schema = "./jonxhikari/data/static/build.sql"
+        self.schema = "./jonxhikari/data/static/schema.sql"
 
     async def connect(self) -> None:
         """Opens a connection pool."""
