@@ -6,6 +6,8 @@ import hikari
 
 import jonxhikari
 
+from pprint import pprint
+
 
 class Compile(lightbulb.Plugin):
     """Runs code through the Piston api."""
@@ -26,16 +28,13 @@ class Compile(lightbulb.Plugin):
             if not (data := await response.json()):
                 return None
 
-        await asyncio.gather(
-            *(self.resolve_lang(lang) for lang in data)
-        )
+        self.resolve_langs(*data)
 
-    async def resolve_lang(self, data: dict[str, str]) -> None:
-        """Saves raw language data to memory."""
-        self.langs.append(data["language"])
-
-        for a in data["aliases"]:
-            self.langs.append(a)
+    def resolve_langs(self, *data: dict[str, str]) -> None:
+        """Saves raw language data to cache."""
+        for lang in data:
+            self.langs.append(lang["language"])
+            self.langs.extend(a for a in lang["aliases"])
 
     @lightbulb.command(name="run")
     async def run_cmd(self, ctx: lightbulb.Context, *, code: str) -> None:

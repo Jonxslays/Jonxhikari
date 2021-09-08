@@ -19,19 +19,11 @@ class SlashClient(tanjun.Client):
 
     def load_modules(self, *modules: t.Union[str, Path]) -> "SlashClient":
         """Loads Tanjun modules."""
-        super().load_modules(
-            *(f"jonxhikari.core.modules.{p.stem}" for p in Path(".").glob("./jonxhikari/core/modules/*.py"))
-        )
+        path = Path(".").glob("./jonxhikari/core/modules/*.py")
+        super().load_modules(*(f"jonxhikari.core.modules.{p.stem}" for p in path))
 
         return self
 
-    #
-    # TODO might come back to this.
-    # Its still not really sorted.
-    # Types are wonky and asserts
-    # all over the place blegh.
-    # >:(
-    #
     @classmethod
     def from_gateway_bot(
         cls,
