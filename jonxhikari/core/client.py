@@ -12,7 +12,7 @@ class SlashClient(tanjun.Client):
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         self.errors = core.Errors()
         self.embeds = core.Embeds()
-        self.bot: core.Bot = kwargs["shard"]
+        self.bot: core.Bot = kwargs["shards"]
 
         super().__init__(*args, **kwargs)
         print("SlashClient initialized!")
@@ -39,7 +39,7 @@ class SlashClient(tanjun.Client):
                 rest=bot.rest,
                 cache=bot.cache,
                 events=bot.event_manager,
-                shard=bot,
+                shards=bot,
                 event_managed=event_managed,
                 mention_prefix=mention_prefix,
                 set_global_commands=set_global_commands,
