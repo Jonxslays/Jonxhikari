@@ -117,11 +117,15 @@ class Bot(lightbulb.Bot):
 
         self.scheduler.start()
         self.add_check(self._dm_command)
+        # self.music = self.get_plugin("Music")
+        # await self.music.connect()
+        # Music is still a work a progress
 
     async def on_stopping(self, _: hikari.StoppingEvent) -> None:
         """Fires at the beginning of shutdown sequence"""
         await self.pool.close()
         await self.session.close()
+        # await self.music.close()
         self.scheduler.shutdown()
 
     async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:

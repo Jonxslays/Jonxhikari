@@ -17,20 +17,24 @@ class WTFError(Exception):
 
 class Errors:
     def embed(self, ctx: DualCtxT, message: str) -> hikari.Embed:
-        desc: str
-
         if isinstance(ctx, lightbulb.Context):
-            desc = f"{ctx.bot.no} {message}"
+            desc: str = f"{ctx.bot.no} {message}"
+
+            embed: hikari.Embed = ctx.bot.embeds.build(
+                ctx=ctx,
+                description=desc,
+                footer="BYPASS",
+            )
 
         elif isinstance(ctx, tanjun.abc.Context):
             assert isinstance(ctx.client, jonxhikari.SlashClient)
             desc = f"{ctx.client.bot.no} {message}"
 
-        embed: hikari.Embed = ctx.client.bot.embeds.build(
-            ctx=ctx,
-            description=desc,
-            footer="BYPASS",
-        )
+            embed = ctx.client.embeds.build(
+                ctx=ctx,
+                description=desc,
+                footer="BYPASS",
+            )
 
         return embed
 

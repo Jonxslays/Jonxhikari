@@ -131,3 +131,4 @@ dmypy.json
 database.db*
 .vscode
 logs/
+.music
