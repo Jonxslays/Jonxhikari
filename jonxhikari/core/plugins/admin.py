@@ -13,9 +13,11 @@ class Admin(lightbulb.Plugin):
         self.bot = bot
         super().__init__()
 
-    @lightbulb.checks.has_guild_permissions(
-        hikari.Permissions.ADMINISTRATOR,
-        hikari.Permissions.MANAGE_GUILD,
+    @lightbulb.check(
+        lightbulb.has_guild_permissions(
+            hikari.Permissions.ADMINISTRATOR,
+            hikari.Permissions.MANAGE_GUILD,
+        )
     )
     @lightbulb.command(name="prefix")
     async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
@@ -64,7 +66,7 @@ class Owner(lightbulb.Plugin):
             ("Info:", f"```{module} {action}```", False),
         ]
 
-    @lightbulb.owner_only()
+    @lightbulb.check(lightbulb.owner_only)
     @lightbulb.command(name="load")
     async def load_cmd(self, ctx: lightbulb.Context, module: str) -> None:
         """Loads a Jonxhikari module."""
@@ -92,7 +94,7 @@ class Owner(lightbulb.Plugin):
             )
         )
 
-    @lightbulb.owner_only()
+    @lightbulb.check(lightbulb.owner_only)
     @lightbulb.command(name="unload")
     async def unload_cmd(self, ctx: lightbulb.Context, module: str) -> None:
         """Unloads a Jonxhikari module."""
@@ -119,7 +121,7 @@ class Owner(lightbulb.Plugin):
             )
         )
 
-    @lightbulb.owner_only()
+    @lightbulb.check(lightbulb.owner_only)
     @lightbulb.command(name="shutdown")
     async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
         """Gracefully shuts down Jonxhikari."""

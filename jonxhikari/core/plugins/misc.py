@@ -7,7 +7,7 @@ import jonxhikari
 
 class Misc(lightbulb.Plugin):
     """Items not fitting in elsewhere."""
-    def __init__(self, bot: lightbulb.Bot) -> None:
+    def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         super().__init__()
 

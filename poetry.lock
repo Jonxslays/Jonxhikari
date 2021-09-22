@@ -99,7 +99,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "black"
-version = "21.8b0"
+version = "21.9b0"
 description = "The uncompromising code formatter."
 category = "dev"
 optional = false
@@ -215,7 +215,7 @@ python-versions = "*"
 
 [[package]]
 name = "hikari"
-version = "2.0.0.dev101"
+version = "2.0.0.dev102"
 description = "A sane Discord API for Python 3 built on asyncio and good intentions"
 category = "main"
 optional = false
@@ -238,7 +238,7 @@ speedups = ["aiodns (==3.0.0)", "cchardet (==2.1.7)", "Brotli (==1.0.9)", "ciso8
 
 [[package]]
 name = "hikari-lightbulb"
-version = "1.0.1"
+version = "1.3.0"
 description = "A simple to use command handler for Hikari"
 category = "main"
 optional = false
@@ -286,7 +286,7 @@ python-versions = ">=3.6"
 name = "mypy"
 version = "0.812"
 description = "Optional static typing for Python"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 
@@ -302,7 +302,7 @@ dmypy = ["psutil (>=4.0)"]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -433,7 +433,7 @@ python-versions = ">=3.6"
 name = "typed-ast"
 version = "1.4.3"
 description = "a fork of Python 2 and 3 ast modules with type comment support"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -492,7 +492,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "1597f226d6e743c20ec2f3448a93b15475a688fbab1b9484ccd432f740ecffc7"
+content-hash = "234e6825bb9f4960b40a4af71aeb4bbe69f6e7d8f9667ae5ddf5e55a4d138b16"
 
 [metadata.files]
 aiodns = [
@@ -570,8 +570,8 @@ attrs = [
     {file = "attrs-21.2.0.tar.gz", hash = "sha256:ef6aaac3ca6cd92904cdd0d83f629a15f18053ec84e6432106f7a4d04ae4f5fb"},
 ]
 black = [
-    {file = "black-21.8b0-py3-none-any.whl", hash = "sha256:2a0f9a8c2b2a60dbcf1ccb058842fb22bdbbcb2f32c6cc02d9578f90b92ce8b7"},
-    {file = "black-21.8b0.tar.gz", hash = "sha256:570608d28aa3af1792b98c4a337dbac6367877b47b12b88ab42095cfc1a627c2"},
+    {file = "black-21.9b0-py3-none-any.whl", hash = "sha256:380f1b5da05e5a1429225676655dddb96f5ae8c75bdf91e53d798871b902a115"},
+    {file = "black-21.9b0.tar.gz", hash = "sha256:7de4cfc7eb6b710de325712d40125689101d21d25283eed7e9998722cf10eb91"},
 ]
 brotli = [
     {file = "Brotli-1.0.9-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:268fe94547ba25b58ebc724680609c8ee3e5a843202e9a381f6f9c5e8bdb5c70"},
@@ -727,12 +727,12 @@ ed25519 = [
     {file = "ed25519-1.5.tar.gz", hash = "sha256:02053ee019ceef0df97294be2d4d5a8fc120fc86e81e08bec1245fc0f9403358"},
 ]
 hikari = [
-    {file = "hikari-2.0.0.dev101-py3-none-any.whl", hash = "sha256:5e7b3a0d00ee98507a89f8b0f44cb287d8167681708762559e0d9c38c48070c3"},
-    {file = "hikari-2.0.0.dev101.tar.gz", hash = "sha256:22e56dd06621f484c05a6e412d3b97c379c62ae5f7f9e127a56fb7b99e0d2d9f"},
+    {file = "hikari-2.0.0.dev102-py3-none-any.whl", hash = "sha256:5660aad9b12954d6acd9948ed853fb3d5329dc8ea10888768235f132c80dc176"},
+    {file = "hikari-2.0.0.dev102.tar.gz", hash = "sha256:1f39a8161c39c4bfc046c81ef07d284fcaa2912cbe7134c3b9783d3192bdb201"},
 ]
 hikari-lightbulb = [
-    {file = "hikari-lightbulb-1.0.1.tar.gz", hash = "sha256:ac81062425c5aff559fed69d32ff072a78293a0a3b3be0167ec30e9e2bafe9f8"},
-    {file = "hikari_lightbulb-1.0.1-py3-none-any.whl", hash = "sha256:cc878489e9d562813eecc1d9d6aed66d2b06d22f1aa9a6955e3f3363b214d98f"},
+    {file = "hikari-lightbulb-1.3.0.tar.gz", hash = "sha256:a108a0081ff1577f3f8c70461297de93b37cd763366072fde23f40deca0a4a6d"},
+    {file = "hikari_lightbulb-1.3.0-py3-none-any.whl", hash = "sha256:b805a83ca059674d7be6a6103ccf3e447de3fd0f7f2bac40cac5c8719b143db8"},
 ]
 hikari-tanjun = [
     {file = "hikari-tanjun-2.0.0a3.tar.gz", hash = "sha256:f176760151ab545b7d8a8f5b5239016e1c3536df0f0e3ac9fe73afe288530678"},
