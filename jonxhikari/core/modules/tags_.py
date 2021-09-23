@@ -220,7 +220,10 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
 
     # There is no tag with that name, do they want to make one?
     await ctx.respond(
-        ctx.client.errors.embed(ctx, f"**WARNING**\nNo `{name}` tag exists to edit. Would you like to create it now?")
+        ctx.client.errors.embed(
+            ctx,
+            f"**WARNING**\nNo `{name}` tag exists to edit. Would you like to create it now?"
+        )
     )
 
     # Checks the user and channel for validity
@@ -228,34 +231,34 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
         condition: bool = e.author_id == ctx.author.id and ctx.channel_id == e.channel_id
         return condition
 
-    try:
-        e = await ctx.client.bot.wait_for(hikari.GuildMessageCreateEvent, 30, predicate)
-
-    except asyncio.TimeoutError:
-        await ctx.edit_initial_response(
-            embed=ctx.client.errors.embed(ctx, f"No `{name}` tag exists to edit.")
-        )
-
-    else:
-        # They do want to make a new tag
-        if e.content.startswith("y" or "Y"):
-            await ctx.client.bot.pool.execute(
-                "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) VALUES ($1, $2, $3, $4);",
-                ctx.guild_id, ctx.author.id, name, content
-            )
-
-            await e.message.delete()
-            await ctx.edit_last_response(
-                embed=ctx.client.embeds.build(
-                    ctx=ctx,
-                    footer="BYPASS",
-                    description=f"{ctx.client.bot.yes} `{name}` tag created by {ctx.author.mention}."
+    async with ctx.client.bot.stream(hikari.GuildMessageCreateEvent, 30) as stream:
+        async for event in stream.filter(predicate):
+            if event.content.startswith("y" or "Y"):
+                await event.message.delete()
+                await ctx.client.bot.pool.execute(
+                    "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) "
+                    "VALUES ($1, $2, $3, $4);",
+                    ctx.guild_id, ctx.author.id, name, content
                 )
-            )
+                await ctx.edit_last_response(
+                    embed=ctx.client.embeds.build(
+                        ctx=ctx,
+                        footer="BYPASS",
+                        description=(
+                            f"{ctx.client.bot.yes} `{name}` tag created by {ctx.author.mention}."
+                        )
+                    )
+                )
+                return
 
-        else: # They don't want to make a new tag
-            await e.message.delete()
-            await ctx.edit_last_response(embed=ctx.client.errors.embed(ctx, f"Not creating new tag `{name}`"))
+            elif event.content.startswith("n" or "N"):
+                await event.message.delete()
+                await ctx.edit_last_response(embed=ctx.client.errors.embed(ctx, f"Not creating new tag `{name}`"))
+                return
+
+    await ctx.edit_initial_response(
+        embed=ctx.client.errors.embed(ctx, f"No `{name}` tag exists to edit.")
+    )
 
 
 @tag_group.with_command
