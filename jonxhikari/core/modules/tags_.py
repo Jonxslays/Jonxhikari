@@ -219,45 +219,67 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
         return None
 
     # There is no tag with that name, do they want to make one?
-    await ctx.respond(
+    i_message = await ctx.respond(
         ctx.client.errors.embed(
             ctx,
-            f"**WARNING**\nNo `{name}` tag exists to edit. Would you like to create it now?"
+            f"**WARNING**\nNo `{name}` tag exists to edit. Would you like to create it now?",
+        ),
+        ensure_result=True,
+        component=(
+            ctx.rest.build_action_row()
+            .add_button(
+                hikari.ButtonStyle.SUCCESS,
+                "yes",
+            )
+            .set_label("Yes")
+            .add_to_container()
+            .add_button(
+                hikari.ButtonStyle.DANGER,
+                "no",
+            )
+            .set_label("No")
+            .add_to_container()
         )
     )
 
-    # Checks the user and channel for validity
-    def predicate(e: hikari.GuildMessageCreateEvent) -> bool:
-        condition: bool = e.author_id == ctx.author.id and ctx.channel_id == e.channel_id
-        return condition
-
-    async with ctx.client.bot.stream(hikari.GuildMessageCreateEvent, 30) as stream:
-        async for event in stream.filter(predicate):
-            if event.content.startswith("y" or "Y"):
-                await event.message.delete()
+    # Stream interaction create events
+    async with ctx.client.bot.stream(hikari.InteractionCreateEvent, 30) as stream:
+        async for event in stream.filter(
+            # Filter out events that arent our author and message
+            lambda e: (
+                isinstance(e.interaction, hikari.ComponentInteraction)
+                and e.interaction.user == ctx.author
+                and e.interaction.message == i_message
+            )
+        ):
+            if event.interaction.custom_id == "yes":
                 await ctx.client.bot.pool.execute(
                     "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) "
                     "VALUES ($1, $2, $3, $4);",
                     ctx.guild_id, ctx.author.id, name, content
                 )
                 await ctx.edit_last_response(
+                    components=[],
                     embed=ctx.client.embeds.build(
                         ctx=ctx,
                         footer="BYPASS",
                         description=(
                             f"{ctx.client.bot.yes} `{name}` tag created by {ctx.author.mention}."
                         )
-                    )
+                    ),
                 )
-                return
+                return None
 
-            elif event.content.startswith("n" or "N"):
-                await event.message.delete()
-                await ctx.edit_last_response(embed=ctx.client.errors.embed(ctx, f"Not creating new tag `{name}`"))
-                return
+            elif event.interaction.custom_id == "no":
+                await ctx.edit_last_response(
+                    embed=ctx.client.errors.embed(ctx, f"Not creating new tag `{name}`"),
+                    components=[],
+                )
+                return None
 
-    await ctx.edit_initial_response(
-        embed=ctx.client.errors.embed(ctx, f"No `{name}` tag exists to edit.")
+    await ctx.edit_last_response(
+        embed=ctx.client.errors.embed(ctx, f"No `{name}` tag exists to edit."),
+        components=[],
     )
 
 
