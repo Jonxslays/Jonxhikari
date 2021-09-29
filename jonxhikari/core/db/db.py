@@ -36,26 +36,8 @@ class AsyncPGDatabase:
         await self.pool.close()
 
     def with_connection(func: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]: # type: ignore
-        """A decorator used to acquire a connection from the pool.
-
-        Args:
-            func (t.Callable[..., t.Any]): The function we are wrapping.
-
-        Returns:
-            t.Callable[..., t.Any]: The same function but wrapped
-                with a connection.
-        """
+        """A decorator used to acquire a connection from the pool."""
         async def wrapper(self: "AsyncPGDatabase", *args: t.Any) -> t.Any:
-            """A wrapper function that injects the acquired connection.
-
-            Args:
-                self (AsyncPGDatabase): The database instance.
-                *args: (t.Any): The remaining args to pass to the
-                    wrapped function.
-
-            Returns:
-                t.Any: The output of the wrapped function.
-            """
             async with self.pool.acquire() as conn:
                 self.calls += 1
                 return await func(self, *args, conn=conn)
@@ -64,30 +46,13 @@ class AsyncPGDatabase:
 
     @with_connection
     async def fetch(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.Optional[t.Any]:
-        """Read 1 field of applicable data.
-
-        Args:
-            q (str): The query to execute.
-            *values (t.Any): The values to pass to the sql query.
-
-        Returns:
-            t.Optional[t.Any]: The requested data or None if not found.
-        """
+        """Read 1 field of applicable data."""
         query = await conn.prepare(q)
         return await query.fetchval(*values)
 
     @with_connection
     async def row(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.Optional[t.List[t.Any]]:
-        """Read 1 row of applicable data.
-
-        Args:
-            q (str): The query to execute.
-            *values (t.Any): The values to pass to the sql query.
-
-        Returns:
-            t.Optional[t.List[t.Any]]: A list containing the requested
-                data or None if not found.
-        """
+        """Read 1 row of applicable data."""
         query = await conn.prepare(q)
         if data := await query.fetchrow(*values):
             return [r for r in data]
@@ -96,16 +61,7 @@ class AsyncPGDatabase:
 
     @with_connection
     async def rows(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.Optional[t.List[t.Iterable[t.Any]]]:
-        """Read all rows of applicable data.
-
-        Args:
-            q (str): The query to execute.
-            *values (t.Any): The values to pass to the sql query.
-
-        Returns:
-            t.Optional[t.List[t.Iterable[t.Any]]]: A list of tuples
-                containing the requested data or None if not found.
-        """
+        """Read all rows of applicable data."""
         query = await conn.prepare(q)
         if data := await query.fetch(*values):
             return [*map(lambda r: tuple(r.values()), data)]
@@ -114,47 +70,24 @@ class AsyncPGDatabase:
 
     @with_connection
     async def column(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> t.List[t.Any]:
-        """Read a single column of applicable data.
-
-        Args:
-            q (str): The query to execute.
-            *values (t.Any): The values to pass to the sql query.
-
-        Returns:
-            t.List[t.Any]: [description]
-        """
+        """Read a single column of applicable data."""
         query = await conn.prepare(q)
         return [r[0] for r in await query.fetch(*values)]
 
     @with_connection
     async def execute(self, q: str, *values: t.Any, conn: asyncpg.Connection) -> None:
-        """Execute a write operation on the database.
-
-        Args:
-            q (str): The query to execute.
-            *values (t.Any): The values to pass to the sql query.
-        """
+        """Execute a write operation on the database."""
         query = await conn.prepare(q)
         await query.fetch(*values)
 
     @with_connection
     async def executemany(self, q: str, values: t.List[t.Iterable[t.Any]], conn: asyncpg.Connection) -> None:
-        """Execute a write operation for each set of values.
-
-        Args:
-            q (str): [description]
-            values (t.List[t.Iterable[t.Any]]): A list of tuples
-                containing the values to pass to the sql query.
-        """
+        """Execute a write operation for each set of values."""
         query = await conn.prepare(q)
         await query.executemany(values)
 
     @with_connection
     async def scriptexec(self, path: str, conn: asyncpg.Connection) -> None:
-        """Execute an sql script at a given path.
-
-        Args:
-            path (str): The path to the .sql file.
-        """
+        """Execute an sql script at a given path."""
         async with aiofiles.open(path, "r", encoding="utf-8") as script:
             await conn.execute((await script.read()))
