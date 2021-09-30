@@ -48,7 +48,7 @@ class Bot(lightbulb.Bot):
 
         # Subscribe to events
         for key in subscriptions:
-            self.event_manager.subscribe(key, subscriptions[key])
+            self.subscribe(key, subscriptions[key])
 
         # Create a Slash Command Client from the Bot
         self.client: SlashClient = SlashClient.from_gateway_bot(
