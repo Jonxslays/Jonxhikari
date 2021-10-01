@@ -9,6 +9,7 @@ from jonxhikari import Config
 
 class AsyncPGDatabase:
     """Wrapper class for AsyncPG Database access."""
+
     def __init__(self) -> None:
         self.calls = 0
         self.db = Config.env("PG_DB")
@@ -21,12 +22,12 @@ class AsyncPGDatabase:
     async def connect(self) -> None:
         """Opens a connection pool."""
         self.pool = await asyncpg.create_pool(
-            user = self.user,
-            host = self.host,
-            port = self.port,
-            database = self.db,
-            password = self.password,
-            loop = asyncio.get_running_loop(),
+            user=self.user,
+            host=self.host,
+            port=self.port,
+            database=self.db,
+            password=self.password,
+            loop=asyncio.get_running_loop(),
         )
 
         await self.scriptexec(self.schema)

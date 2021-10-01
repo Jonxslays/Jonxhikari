@@ -11,6 +11,7 @@ from pprint import pprint
 
 class Compile(lightbulb.Plugin):
     """Runs code through the Piston api."""
+
     def __init__(self, bot: jonxhikari.Bot) -> None:
         super().__init__()
         self.bot = bot
@@ -48,7 +49,7 @@ class Compile(lightbulb.Plugin):
             output = f"{await self.bot.resolve_prefix(self.bot, ctx.message)}run \`\`\`python\nprint('This is a test')\`\`\`"
             await ctx.respond(
                 f"Wrong format. Use a code block.\nSpecify lang inside first set of triple backticks. Example:\n\n{output}",
-                reply=True
+                reply=True,
             )
             return None
 
@@ -62,9 +63,7 @@ class Compile(lightbulb.Plugin):
         data = {
             "language": lang,
             "version": "*",
-            "files": [
-                { "content": source }
-            ],
+            "files": [{"content": source}],
         }
 
         async with self.bot.session.post(uri, json=data) as response:
@@ -82,23 +81,18 @@ class Compile(lightbulb.Plugin):
         if stdout := data["run"]["stdout"]:
             color = hikari.Color.from_rgb(0, 210, 0)
 
-            fields.append(
-                ("Output:", f"```{stdout}```", False)
-            )
+            fields.append(("Output:", f"```{stdout}```", False))
 
         if stderr := data["run"]["stderr"]:
             color = hikari.Color.from_rgb(210, 0, 0)
 
-            fields.append(
-                ("Errors:", f"```{stderr}```", False)
-            )
+            fields.append(("Errors:", f"```{stderr}```", False))
 
         await ctx.respond(
-            embed = self.bot.embeds.build(
-                ctx=ctx, fields=fields, color=color,
-                header="Source code evaluation results"
+            embed=self.bot.embeds.build(
+                ctx=ctx, fields=fields, color=color, header="Source code evaluation results"
             ),
-            reply=True
+            reply=True,
         )
 
 

@@ -9,6 +9,7 @@ import jonxhikari
 
 class Admin(lightbulb.Plugin):
     """Dedicated to Admin only commands."""
+
     def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         super().__init__()
@@ -16,14 +17,15 @@ class Admin(lightbulb.Plugin):
     @lightbulb.check(
         lightbulb.has_guild_permissions(
             hikari.Permissions.ADMINISTRATOR,
-            hikari.Permissions.MANAGE_GUILD,
         )
     )
     @lightbulb.command(name="prefix")
     async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
         """View or change Jonxhikari's command prefix."""
         if not _prefix:
-            await ctx.respond(f"The current prefix is `{self.bot.guilds[ctx.guild_id]['prefix']}`.")
+            await ctx.respond(
+                f"The current prefix is `{self.bot.guilds[ctx.guild_id]['prefix']}`."
+            )
             return None
 
         if len(_prefix) > 3:
@@ -31,12 +33,15 @@ class Admin(lightbulb.Plugin):
             return None
 
         self.bot.guilds[ctx.guild_id]["prefix"] = _prefix
-        await self.bot.pool.execute("UPDATE guilds SET Prefix = $1 WHERE GuildID = $2;", _prefix, ctx.guild_id)
+        await self.bot.pool.execute(
+            "UPDATE guilds SET Prefix = $1 WHERE GuildID = $2;", _prefix, ctx.guild_id
+        )
         await ctx.respond(f"Prefix successfully updated to: `{_prefix}`")
 
 
 class Owner(lightbulb.Plugin):
     """Dedicated to Owner only commands."""
+
     def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         self.plugin_path = "jonxhikari.core.plugins."
@@ -45,7 +50,7 @@ class Owner(lightbulb.Plugin):
     @staticmethod
     def is_invalid(module: str) -> list[tuple[str, str, bool]]:
         return [
-            ("Extension:", f'```{module}.py```', True),
+            ("Extension:", f"```{module}.py```", True),
             ("Status:", f"```ExtensionNotFound```", True),
             ("Info:", f"```{module} is not a valid extension.```", False),
         ]
@@ -53,7 +58,7 @@ class Owner(lightbulb.Plugin):
     @staticmethod
     def failed_attempt(module: str, exc: errors.ExtensionError) -> list[tuple[str, str, bool]]:
         return [
-            ("Extension:", f'```{module}.py```', True),
+            ("Extension:", f"```{module}.py```", True),
             ("Status:", f"```{exc.__class__.__name__}```", True),
             ("Info:", f"```{exc.text}```", False),
         ]
@@ -61,7 +66,7 @@ class Owner(lightbulb.Plugin):
     @staticmethod
     def success(module: str, action: str) -> list[tuple[str, str, bool]]:
         return [
-            ("Extension:", f'```{module}.py```', True),
+            ("Extension:", f"```{module}.py```", True),
             ("Status:", "```SuccessfulSync```", True),
             ("Info:", f"```{module} {action}```", False),
         ]
@@ -87,12 +92,7 @@ class Owner(lightbulb.Plugin):
             else:
                 fields = self.success(module, "loaded.\nlistening...")
 
-        await ctx.respond(
-            embed = self.bot.embeds.build(
-                ctx=ctx, fields=fields,
-                header="Loading..."
-            )
-        )
+        await ctx.respond(embed=self.bot.embeds.build(ctx=ctx, fields=fields, header="Loading..."))
 
     @lightbulb.check(lightbulb.owner_only)
     @lightbulb.command(name="unload")
@@ -115,26 +115,46 @@ class Owner(lightbulb.Plugin):
                 fields = self.success(module, "unloaded.\nsleeping...")
 
         await ctx.respond(
-            embed = self.bot.embeds.build(
-                ctx=ctx, fields=fields,
-                header="Unloading..."
-            )
+            embed=self.bot.embeds.build(ctx=ctx, fields=fields, header="Unloading...")
         )
 
     @lightbulb.check(lightbulb.owner_only)
     @lightbulb.command(name="shutdown")
     async def shutdown_cmd(self, ctx: lightbulb.Context) -> None:
-        """Gracefully shuts down Jonxhikari."""
+        """Gracefully shuts down Jxhk."""
         await ctx.message.delete()
         await ctx.respond("Shutting down...")
         await self.bot.close()
+        print("Bot closed via message command")
+
+
+# class Shutdown(lightbulb.SlashCommand):
+#     description: str = "Gracefully shuts down Jxhk."
+#     checks: t.Iterable[lightbulb.Check] = (lightbulb.owner_only,)
+#     enabled_guilds: t.Iterable[int] = (jonxhikari.Config.env("HOME_GUILD", int),)
+
+#     async def callback(self, ctx: lightbulb.SlashCommandContext) -> None:
+#         await ctx.respond(
+#             "Shutting down...",
+#             flags=hikari.MessageFlag.EPHEMERAL,
+#         )
+#         await ctx.bot.close()
+#         print("Bot closed via slash command")
+
+#         # TODO fix this
+#         # For some reason this close() method appears to leave some connection
+#         # in tanjun open, while the self.bot.close() in the message command
+#         # above does not have this problem. I am not sure what the actual
+#         # cause is though.
 
 
 def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Admin(bot))
     bot.add_plugin(Owner(bot))
+    # bot.add_slash_command(Shutdown, create=True)
 
 
 def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Admin")
     bot.remove_plugin("Owner")
+    # bot.remove_slash_command("Shutdown")

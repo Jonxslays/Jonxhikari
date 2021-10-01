@@ -32,15 +32,15 @@ tag_group = component.with_slash_command(
 async def tag_get_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
     """Gets a tag from the database."""
     assert isinstance(ctx.client, SlashClient)
-    query = "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = $1 AND TagName = $2 RETURNING TagContent;"
+    query = (
+        "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = $1 AND TagName = $2 RETURNING TagContent;"
+    )
 
     if content := await ctx.client.bot.pool.fetch(query, ctx.guild_id, name.lower()):
         await ctx.respond(content)
         return None
 
-    await ctx.respond(
-        ctx.client.errors.embed(ctx, f"`{name}` is not a valid tag.")
-    )
+    await ctx.respond(ctx.client.errors.embed(ctx, f"`{name}` is not a valid tag."))
 
 
 @tag_group.with_command
@@ -48,30 +48,30 @@ async def tag_get_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
 @tanjun.with_str_slash_option("name", "The name of the tag to get.", default=None)
 @tanjun.as_slash_command("info", "Gets info about a tag, or a members tags.")
 async def tag_info_slash_command(
-    ctx: tanjun.abc.Context,
-    name: t.Optional[str],
-    member: t.Optional[hikari.InteractionMember]
+    ctx: tanjun.abc.Context, name: t.Optional[str], member: t.Optional[hikari.InteractionMember]
 ) -> None:
     """Gets info about a tag, or a members tags."""
     assert isinstance(ctx.client, SlashClient)
 
-    if (not name and not member):
+    if not name and not member:
         await ctx.respond(
-            ctx.client.errors.embed(ctx, "Please pass a tag name or member to get tag information about.")
+            ctx.client.errors.embed(
+                ctx, "Please pass a tag name or member to get tag information about."
+            )
         )
 
     elif name and member:
         await ctx.respond(
-            ctx.client.errors.embed(ctx, "You can only get info on a tag name OR a member, but not both.")
+            ctx.client.errors.embed(
+                ctx, "You can only get info on a tag name OR a member, but not both."
+            )
         )
 
     elif name:
         query = "SELECT TagOwner, Uses FROM tags WHERE TagName = $1 AND GuildID = $2;"
 
         if not (tag_name_info := await ctx.client.bot.pool.row(query, name.lower(), ctx.guild_id)):
-            await ctx.respond(
-                ctx.client.errors.embed(ctx, f"No `{name}` tag exists.")
-            )
+            await ctx.respond(ctx.client.errors.embed(ctx, f"No `{name}` tag exists."))
             return None
 
         await ctx.respond(
@@ -79,11 +79,11 @@ async def tag_info_slash_command(
                 ctx=ctx,
                 title=f"{ctx.client.bot.yes} Tag information",
                 footer="BYPASS",
-                description=f"Requested tag: `{name}`""",
+                description=f"Requested tag: `{name}`" "",
                 fields=[
                     ("Owner", f"<@!{tag_name_info[0]}>", True),
                     ("Uses", tag_name_info[1], True),
-                ]
+                ],
             )
         )
 
@@ -123,9 +123,7 @@ async def tag_list__slash_command(ctx: tanjun.abc.Context) -> None:
 
     # If there are no tags stored
     if not len(tags):
-        await ctx.respond(
-            ctx.client.errors.embed(ctx, "No tags for this guild yet, make one!")
-        )
+        await ctx.respond(ctx.client.errors.embed(ctx, "No tags for this guild yet, make one!"))
         return None
 
     assert ctx.guild_id is not None
@@ -153,18 +151,21 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
     if (name := name.lower()) in RESERVED_TAGS:
         await ctx.respond(
             ctx.client.errors.embed(
-                ctx, f"That tag name is reserved. All of these are: ```{', '.join(RESERVED_TAGS)}```"
+                ctx,
+                f"That tag name is reserved. All of these are: ```{', '.join(RESERVED_TAGS)}```",
             )
         )
 
     # If someone tries to make an already made tag... yeah thats a use :kek:
     elif owner := await ctx.client.bot.pool.fetch(
         "UPDATE tags SET Uses = Uses + 1 WHERE GuildID = $1 AND TagName = $2 RETURNING TagOwner;",
-        ctx.guild_id, name
+        ctx.guild_id,
+        name,
     ):
         await ctx.respond(
             ctx.client.errors.embed(
-                ctx, f"Sorry, `{name}` was already created by <@!{owner}>. Try a different tag name.",
+                ctx,
+                f"Sorry, `{name}` was already created by <@!{owner}>. Try a different tag name.",
             )
         )
         return None
@@ -172,7 +173,10 @@ async def tag_create_slash_command(ctx: tanjun.abc.Context, name: str, content: 
     # A successful tag creation
     await ctx.client.bot.pool.execute(
         "INSERT INTO tags (guildid, tagowner, tagname, tagcontent) VALUES ($1, $2, $3, $4);",
-        ctx.guild_id, ctx.author.id, name, content
+        ctx.guild_id,
+        ctx.author.id,
+        name,
+        content,
     )
 
     await ctx.respond(
@@ -194,14 +198,15 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
     assert isinstance(ctx.client, SlashClient)
 
     if owner := await ctx.client.bot.pool.fetch(
-        "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;",
-        ctx.guild_id, name
+        "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;", ctx.guild_id, name
     ):
         # A successful tag edit
         if owner == ctx.author.id:
             await ctx.client.bot.pool.execute(
                 "UPDATE tags SET TagContent = $1 WHERE TagName = $2 AND GuildID = $3;",
-                content, name, ctx.guild_id
+                content,
+                name,
+                ctx.guild_id,
             )
             await ctx.respond(
                 ctx.client.embeds.build(
@@ -239,7 +244,7 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
             )
             .set_label("No")
             .add_to_container()
-        )
+        ),
     )
 
     # Stream interaction create events
@@ -256,7 +261,10 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
                 await ctx.client.bot.pool.execute(
                     "INSERT INTO tags (GuildID, TagOwner, TagName, TagContent) "
                     "VALUES ($1, $2, $3, $4);",
-                    ctx.guild_id, ctx.author.id, name, content
+                    ctx.guild_id,
+                    ctx.author.id,
+                    name,
+                    content,
                 )
                 await ctx.edit_last_response(
                     components=[],
@@ -265,7 +273,7 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
                         footer="BYPASS",
                         description=(
                             f"{ctx.client.bot.yes} `{name}` tag created by {ctx.author.mention}."
-                        )
+                        ),
                     ),
                 )
                 return None
@@ -287,19 +295,25 @@ async def tag_edit_slash_command(ctx: tanjun.abc.Context, name: str, content: st
 @tanjun.with_member_slash_option("member", "The member to transfer the tag to.")
 @tanjun.with_str_slash_option("name", "The name of the tag to transfer.")
 @tanjun.as_slash_command("transfer", "Transfer a tag you own to another member.")
-async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member: hikari.InteractionMember) -> None:
+async def tag_transfer_slash_command(
+    ctx: tanjun.abc.Context, name: str, member: hikari.InteractionMember
+) -> None:
     """Command for transferring a tag you own to someone else."""
     name = name.lower()
     assert isinstance(ctx.client, SlashClient)
 
     if owner := await ctx.client.bot.pool.fetch(
-        "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;", ctx.guild_id, name,
+        "SELECT TagOwner FROM tags WHERE GuildID = $1 AND TagName = $2;",
+        ctx.guild_id,
+        name,
     ):
         # A successful transfer
         if owner == ctx.author.id:
             await ctx.client.bot.pool.execute(
                 "UPDATE tags SET TagOwner = $1 WHERE GuildID = $2 AND TagName = $3;",
-                member.id, ctx.guild_id, name
+                member.id,
+                ctx.guild_id,
+                name,
             )
             await ctx.respond(
                 ctx.client.embeds.build(
@@ -308,21 +322,21 @@ async def tag_transfer_slash_command(ctx: tanjun.abc.Context, name: str, member:
                     description=(
                         f"{ctx.client.bot.yes} `{name}` tag transferred "
                         f"from {ctx.author.mention} to {member.mention}."
-                    )
+                    ),
                 )
             )
             return None
 
         # Can't transfer a tag they don't own
         await ctx.respond(
-            ctx.client.errors.embed(ctx, f"<@!{owner}> owns the `{name}` tag, you cannot transfer it.")
+            ctx.client.errors.embed(
+                ctx, f"<@!{owner}> owns the `{name}` tag, you cannot transfer it."
+            )
         )
         return None
 
     # Can't transfer a tag that doesn't exist
-    await ctx.respond(
-        ctx.client.errors.embed(ctx, f"No `{name}` tag exists to transfer.")
-    )
+    await ctx.respond(ctx.client.errors.embed(ctx, f"No `{name}` tag exists to transfer."))
 
 
 @tag_group.with_command
@@ -352,14 +366,14 @@ async def tag_delete_slash_command(ctx: tanjun.abc.Context, name: str) -> None:
 
         # Can't delete a tag they don't own
         await ctx.respond(
-            ctx.client.errors.embed(ctx, f"<@!{owner}> owns the `{name}` tag, you cannot delete it.")
+            ctx.client.errors.embed(
+                ctx, f"<@!{owner}> owns the `{name}` tag, you cannot delete it."
+            )
         )
         return None
 
     # Can't delete a tag that doesn't exist
-    await ctx.respond(
-        ctx.client.errors.embed(ctx, f"No `{name}` tag exists to delete.")
-    )
+    await ctx.respond(ctx.client.errors.embed(ctx, f"No `{name}` tag exists to delete."))
 
 
 @tanjun.as_loader

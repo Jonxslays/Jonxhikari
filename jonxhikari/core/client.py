@@ -9,6 +9,7 @@ from jonxhikari import core
 
 class SlashClient(tanjun.Client):
     """Client for handling Slash Commands."""
+
     def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         self.errors = core.Errors()
         self.embeds = core.Embeds()

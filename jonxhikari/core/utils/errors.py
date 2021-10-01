@@ -48,9 +48,7 @@ class Errors:
         raise exc
 
     async def parse_tanjun(
-        self,
-        exc: t.Union[tanjun.CommandError, Exception],
-        ctx: tanjun.abc.Context
+        self, exc: t.Union[tanjun.CommandError, Exception], ctx: tanjun.abc.Context
     ) -> None:
         if isinstance(exc, (tanjun.NotEnoughArgumentsError, tanjun.TooManyArgumentsError)):
             await ctx.respond(self.embed(ctx, f"**ERROR**```{exc.message}```"))
@@ -65,9 +63,7 @@ class Errors:
             raise exc
 
     async def parse_lightbulb(
-        self,
-        exc: t.Union[lb_errors.CommandError, Exception],
-        ctx: lightbulb.Context
+        self, exc: t.Union[lb_errors.CommandError, Exception], ctx: lightbulb.Context
     ) -> None:
         if isinstance(exc, lb_errors.CommandNotFound):
             pass
@@ -87,7 +83,11 @@ class Errors:
         elif isinstance(exc, lb_errors.ConverterFailure):
             await ctx.respond(
                 self.embed(
-                    ctx, f"**ERROR**\nConversion of arguments failed during `{ctx.command.qualified_name}` command."
+                    ctx,
+                    (
+                        "**ERROR**\nConversion of arguments failed during "
+                        f"`{ctx.command.qualified_name}` command.",
+                    ),
                 )
             )
             raise exc

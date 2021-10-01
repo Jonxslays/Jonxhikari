@@ -20,7 +20,6 @@ class Bot(lightbulb.Bot):
 
         self.version = version
         self.invokes = 0
-        self.invokes = 0
         self.guilds: dict[int, dict[str, str]] = {}
 
         self.scheduler = AsyncIOScheduler()
@@ -31,11 +30,12 @@ class Bot(lightbulb.Bot):
 
         # Initiate lightbulb Bot superclass
         super().__init__(
-            token = Config.env("TOKEN"),
-            intents = hikari.Intents.ALL,
-            prefix = lightbulb.when_mentioned_or(self.resolve_prefix),
-            insensitive_commands = True,
-            ignore_bots = True,
+            token=Config.env("TOKEN"),
+            owner_ids=[Config.env("OWNER_IDS", int)],
+            intents=hikari.Intents.ALL,
+            prefix=lightbulb.when_mentioned_or(self.resolve_prefix),
+            insensitive_commands=True,
+            ignore_bots=True,
         )
 
         # Events we care about
@@ -52,7 +52,8 @@ class Bot(lightbulb.Bot):
 
         # Create a Slash Command Client from the Bot
         self.client: SlashClient = SlashClient.from_gateway_bot(
-            self, set_global_commands=Config.env("HOME_GUILD", int),
+            self,
+            set_global_commands=Config.env("HOME_GUILD", int),
         ).load_modules()
 
     @property
@@ -89,8 +90,7 @@ class Bot(lightbulb.Bot):
         """fires on new guild join, on startup, and after disconnect"""
         if event.guild_id not in self.guilds:
             await self.pool.execute(
-                "INSERT INTO guilds (GuildID) VALUES ($1) ON CONFLICT DO NOTHING;",
-                event.guild_id
+                "INSERT INTO guilds (GuildID) VALUES ($1) ON CONFLICT DO NOTHING;", event.guild_id
             )
 
     async def on_starting(self, _: hikari.StartingEvent) -> None:
@@ -111,9 +111,7 @@ class Bot(lightbulb.Bot):
         if guild_prefix is not None:
             for guild, prefix in guild_prefix:
                 # Cache prefixes into self.guilds
-                self.guilds[guild] = {
-                    "prefix": prefix
-                }
+                self.guilds[guild] = {"prefix": prefix}
 
         self.scheduler.start()
         self.add_check(self._dm_command)
@@ -135,13 +133,15 @@ class Bot(lightbulb.Bot):
             return cached_p
 
         elif not await self._dm_command(message):
-            fetched_p: str = await self.pool.fetch("SELECT Prefix FROM guilds WHERE GuildID = $1;", id_)
+            fetched_p: str = await self.pool.fetch(
+                "SELECT Prefix FROM guilds WHERE GuildID = $1;", id_
+            )
             return fetched_p
 
         else:
             return "$"
 
-    #TODO Find a better way. guild_id may not be cached.
+    # TODO Find a better way. guild_id may not be cached.
     async def _dm_command(self, message: hikari.Message) -> bool:
         """Checks if command was invoked in DMs"""
         return message.guild_id is not None

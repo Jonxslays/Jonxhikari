@@ -29,7 +29,9 @@ async def call_cat_api(client: SlashClient) -> str:
 async def kitties_command(ctx: tanjun.abc.Context) -> None:
     assert isinstance(ctx.client, SlashClient)
     if not (url := await call_cat_api(ctx.client)):
-        await ctx.respond(ctx.client.errors.embed(ctx.client, "Unable to fetch a kitty right now :("))
+        await ctx.respond(
+            ctx.client.errors.embed(ctx.client, "Unable to fetch a kitty right now :(")
+        )
         return None
 
     e = ctx.client.embeds.build(

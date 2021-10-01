@@ -10,6 +10,7 @@ import jonxhikari
 
 class Events(lightbulb.Plugin):
     """Jonxhikaris pseudo event handler."""
+
     def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         super().__init__()
@@ -32,7 +33,7 @@ class Events(lightbulb.Plugin):
         await self.bot.errors.parse_lightbulb(event.exception, event.context)
 
     @lightbulb.plugins.listener()
-    async def on_exc(self, event: hikari.ExceptionEvent) -> None: # type: ignore
+    async def on_exc(self, event: hikari.ExceptionEvent) -> None:  # type: ignore
         """Handles other exception events."""
         await self.bot.errors.parse(event.exception)
 

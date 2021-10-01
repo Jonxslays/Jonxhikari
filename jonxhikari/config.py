@@ -11,11 +11,13 @@ dotenv.load_dotenv()
 
 class DatabaseLoggingFilter(logging.Filter):
     """Filters out Database sync logs."""
+
     def filter(self, record: logging.LogRecord) -> bool:
         return (
             'Running job "Database.commit' not in (m := record.getMessage())
             and 'Job "Database.commit' not in m
         )
+
 
 class Config:
     """Object related to configuration."""
@@ -40,7 +42,8 @@ class Config:
 
         rfh = RotatingFileHandler(
             "./jonxhikari/data/logs/main.log",
-            maxBytes=512000, encoding="utf-8",
+            maxBytes=512000,
+            encoding="utf-8",
             backupCount=10,
         )
 

@@ -13,6 +13,7 @@ from jonxhikari.core import Lines
 
 class Meta(lightbulb.Plugin):
     """Devoted to meta stats etc."""
+
     def __init__(self, bot: jonxhikari.Bot) -> None:
         self.bot = bot
         self.lines = Lines()
@@ -27,7 +28,7 @@ class Meta(lightbulb.Plugin):
 
         await msg.edit(
             f"**Gateway**: {self.bot.heartbeat_latency * 1000:,.0f} ms\n**REST**: {(end - start) * 1000:,.0f} ms",
-            user_mentions=False
+            user_mentions=False,
         )
 
     @lightbulb.command(name="stats")
@@ -37,7 +38,7 @@ class Meta(lightbulb.Plugin):
 
         proc = Process()
         with proc.oneshot():
-            uptime = (timedelta(seconds=time() - proc.create_time()))
+            uptime = timedelta(seconds=time() - proc.create_time())
             cpu_time = str(timedelta(seconds=(cpu := proc.cpu_times()).system + cpu.user))
             mem_total = virtual_memory().total / (1024 ** 2)
             mem_of_total = proc.memory_percent()
@@ -58,33 +59,39 @@ class Meta(lightbulb.Plugin):
             ("Platform", f"```{distro_[0].title()} {distro_[1]}```", True),
             (
                 "Code breakdown",
-                f"```| {code_p:>5.2f}% | code lines  -> {self.lines.code:>6} |\n" +
-                f"| {docs_p:>5.2f}% | docstrings  -> {self.lines.docs:>6} |\n" +
-                f"| {blank_p:>5.2f}% | blank lines -> {self.lines.blank:>6} |\n```",
-                False
+                f"```| {code_p:>5.2f}% | code lines  -> {self.lines.code:>6} |\n"
+                + f"| {docs_p:>5.2f}% | docstrings  -> {self.lines.docs:>6} |\n"
+                + f"| {blank_p:>5.2f}% | blank lines -> {self.lines.blank:>6} |\n```",
+                False,
             ),
             (
                 "Files by language",
-                f"```| {len(self.lines.py) / len(self.lines) * 100:>5.2f}% | .py files   -> {len(self.lines.py):>6} |\n" +
-                f"| {len(self.lines.sql) / len(self.lines) * 100:>5.2f}% | .sql files  -> {len(self.lines.sql):>6} |```",
+                f"```| {len(self.lines.py) / len(self.lines) * 100:>5.2f}% | .py files   -> {len(self.lines.py):>6} |\n"
+                + f"| {len(self.lines.sql) / len(self.lines) * 100:>5.2f}% | .sql files  -> {len(self.lines.sql):>6} |```",
                 False,
             ),
-            ("Memory usage", f"```| {mem_of_total:>5,.2f}% | {mem_usage:,.0f} MiB  /  {(mem_total):,.0f} MiB |```", False),
+            (
+                "Memory usage",
+                f"```| {mem_of_total:>5,.2f}% | {mem_usage:,.0f} MiB  /  {(mem_total):,.0f} MiB |```",
+                False,
+            ),
             ("Uptime", f"```{str(uptime)[:-4]}```", True),
             ("CPU time", f"```{cpu_time[:-4]}```", True),
             (
                 "Database calls since uptime",
-                f"```{self.bot.pool.calls:,} ({self.bot.pool.calls / (uptime.total_seconds() / 60):,.6f}" +
-                f" / minute)```",
-                False
+                f"```{self.bot.pool.calls:,} ({self.bot.pool.calls / (uptime.total_seconds() / 60):,.6f}"
+                + f" / minute)```",
+                False,
             ),
         ]
 
         await ctx.respond(
             embed=self.bot.embeds.build(
-                ctx=ctx, header=" ", title="System stats",
+                ctx=ctx,
+                header=" ",
+                title="System stats",
                 thumbnail=self.bot.get_me().avatar_url,
-                fields=fields
+                fields=fields,
             ),
         )
 
