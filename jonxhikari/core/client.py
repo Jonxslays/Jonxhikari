@@ -18,7 +18,7 @@ class SlashClient(tanjun.Client):
         super().__init__(*args, **kwargs)
         print("SlashClient initialized!")
 
-    def load_modules(self, *modules: t.Union[str, Path]) -> "SlashClient":
+    def load_modules(self) -> "SlashClient":
         """Loads Tanjun modules."""
         path = Path(".").glob("./jonxhikari/core/modules/*.py")
         super().load_modules(*(f"jonxhikari.core.modules.{p.stem}" for p in path))
