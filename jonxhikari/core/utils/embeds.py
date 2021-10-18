@@ -8,7 +8,7 @@ import tanjun
 
 FieldsT = t.Optional[list[tuple[t.Union[str, int], t.Union[str, int], bool]]]
 CtxT = t.Union[lightbulb.Context, tanjun.abc.Context]
-ResourceishT = t.Optional[hikari.files.Resourceish]
+ResourceishT = t.Optional[hikari.Resourceish]
 
 
 class Embeds:
@@ -42,7 +42,7 @@ class Embeds:
         self.header_icon: ResourceishT = kwargs.get("header_icon")
         self.thumbnail: ResourceishT = kwargs.get("thumbnail")
         self.image: ResourceishT = kwargs.get("image")
-        self.color: t.Optional[hikari.colors.Colorish] = kwargs.get("color")
+        self.color: t.Optional[hikari.Colorish] = kwargs.get("color")
         self.time: datetime.datetime = kwargs.get(
             "timestamp", datetime.datetime.now().astimezone()
         )
@@ -68,20 +68,13 @@ class Embeds:
                 icon=(
                     None
                     if self.footer == "BYPASS"
-                    else (
-                        self._ctx.author.avatar_url
-                        or (
-                            self._ctx.bot.get_me().avatar_url
-                            if isinstance(self._ctx, lightbulb.Context)
-                            else self._ctx.client.bot.get_me().avatar_url
-                        )
-                    )
+                    else self._ctx.author.avatar_url
                 ),
             )
         )
 
         if self.fields:
             for name, value, inline in self.fields:
-                embed.add_field(name=name, value=value, inline=inline)
+                embed.add_field(name=str(name), value=str(value), inline=inline)
 
         return embed

@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import typing as t
 
 import asyncpg
@@ -38,6 +39,8 @@ class AsyncPGDatabase:
 
     def with_connection(func: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]: # type: ignore
         """A decorator used to acquire a connection from the pool."""
+
+        @functools.wraps(func)
         async def wrapper(self: "AsyncPGDatabase", *args: t.Any) -> t.Any:
             async with self.pool.acquire() as conn:
                 self.calls += 1

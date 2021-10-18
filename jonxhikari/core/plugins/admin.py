@@ -21,7 +21,7 @@ class Admin(lightbulb.Plugin):
     )
     @lightbulb.command(name="prefix")
     async def prefix_cmd(self, ctx: lightbulb.Context, _prefix: t.Optional[str] = None) -> None:
-        """View or change Jonxhikari's command prefix."""
+        """View or change Jxhk's command prefix."""
         if not _prefix:
             await ctx.respond(
                 f"The current prefix is `{self.bot.guilds[ctx.guild_id]['prefix']}`."
@@ -74,7 +74,7 @@ class Owner(lightbulb.Plugin):
     @lightbulb.check(lightbulb.owner_only)
     @lightbulb.command(name="load")
     async def load_cmd(self, ctx: lightbulb.Context, module: str) -> None:
-        """Loads a Jonxhikari module."""
+        """Loads a Jxhk plugin."""
         module = module.lower()
         path = self.plugin_path + module
 
@@ -125,36 +125,13 @@ class Owner(lightbulb.Plugin):
         await ctx.message.delete()
         await ctx.respond("Shutting down...")
         await self.bot.close()
-        print("Bot closed via message command")
-
-
-# class Shutdown(lightbulb.SlashCommand):
-#     description: str = "Gracefully shuts down Jxhk."
-#     checks: t.Iterable[lightbulb.Check] = (lightbulb.owner_only,)
-#     enabled_guilds: t.Iterable[int] = (jonxhikari.Config.env("HOME_GUILD", int),)
-
-#     async def callback(self, ctx: lightbulb.SlashCommandContext) -> None:
-#         await ctx.respond(
-#             "Shutting down...",
-#             flags=hikari.MessageFlag.EPHEMERAL,
-#         )
-#         await ctx.bot.close()
-#         print("Bot closed via slash command")
-
-#         # TODO fix this
-#         # For some reason this close() method appears to leave some connection
-#         # in tanjun open, while the self.bot.close() in the message command
-#         # above does not have this problem. I am not sure what the actual
-#         # cause is though.
 
 
 def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Admin(bot))
     bot.add_plugin(Owner(bot))
-    # bot.add_slash_command(Shutdown, create=True)
 
 
 def unload(bot: jonxhikari.Bot) -> None:
     bot.remove_plugin("Admin")
     bot.remove_plugin("Owner")
-    # bot.remove_slash_command("Shutdown")

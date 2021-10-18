@@ -5,8 +5,7 @@ import hikari
 import tanjun
 from lightbulb import errors as lb_errors
 
-import jonxhikari
-
+from .embeds import Embeds
 
 DualCtxT = t.Union[lightbulb.Context, tanjun.abc.Context]
 
@@ -16,25 +15,14 @@ class WTFError(Exception):
 
 
 class Errors:
+    embeds = Embeds()
+
     def embed(self, ctx: DualCtxT, message: str) -> hikari.Embed:
-        if isinstance(ctx, lightbulb.Context):
-            desc: str = f"{ctx.bot.no} {message}"
-
-            embed: hikari.Embed = ctx.bot.embeds.build(
-                ctx=ctx,
-                description=desc,
-                footer="BYPASS",
-            )
-
-        elif isinstance(ctx, tanjun.abc.Context):
-            assert isinstance(ctx.client, jonxhikari.SlashClient)
-            desc = f"{ctx.client.bot.no} {message}"
-
-            embed = ctx.client.embeds.build(
-                ctx=ctx,
-                description=desc,
-                footer="BYPASS",
-            )
+        embed = self.embeds.build(
+            ctx=ctx,
+            description=message,
+            footer="BYPASS",
+        )
 
         return embed
 
@@ -69,15 +57,15 @@ class Errors:
             pass
 
         elif isinstance(exc, lb_errors.NotEnoughArguments):
-            args = "\n".join(f" > {a}" for a in exc.missing_args)
+            args = "\n".join(f" > {a}" for a in exc.args[1])
             await ctx.respond(
                 self.embed(ctx, f"**ERROR**\nRequired argument(s) were missing:\n```{args}```")
             )
             raise exc
 
         elif isinstance(exc, lb_errors.MissingRequiredPermission):
-            perms = "\n".join(f" > {p.name}" for p in exc.permissions.split()).replace("_", " ")
-            await ctx.respond(self.embed(ctx, f"**ERROR**\n{exc.text}.```{perms}```"))
+            perms = "\n".join(f" > {p}" for p in exc.args[1:]).replace("_", " ")
+            await ctx.respond(self.embed(ctx, f"**ERROR**\nMissing permissions.```{perms}```"))
             raise exc
 
         elif isinstance(exc, lb_errors.ConverterFailure):
@@ -86,7 +74,7 @@ class Errors:
                     ctx,
                     (
                         "**ERROR**\nConversion of arguments failed during "
-                        f"`{ctx.command.qualified_name}` command.",
+                        f"`{ctx.command.qualified_name}` command."
                     ),
                 )
             )

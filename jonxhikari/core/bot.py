@@ -4,6 +4,7 @@ from pathlib import Path
 import aiohttp
 import lightbulb
 import hikari
+import tanjun
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from jonxhikari import Config
@@ -38,6 +39,21 @@ class Bot(lightbulb.Bot):
             ignore_bots=True,
         )
 
+        # Create a Slash Command Client from the Bot
+        self.client: SlashClient = (
+            SlashClient.from_gateway_bot(
+                self,
+                set_global_commands=Config.env("HOME_GUILD", int),
+                mention_prefix=True,
+            )
+            .set_type_dependency(self.__class__, self)
+            .load_modules()
+        )
+
+        @self.client.with_prefix_getter
+        async def get_tanjun_prefix(ctx: tanjun.abc.MessageContext) -> t.Iterable[str]:
+            return (await self.resolve_prefix(self, ctx.message),)
+
         # Events we care about
         subscriptions = {
             hikari.StartingEvent: self.on_starting,
@@ -49,12 +65,6 @@ class Bot(lightbulb.Bot):
         # Subscribe to events
         for key in subscriptions:
             self.subscribe(key, subscriptions[key])
-
-        # Create a Slash Command Client from the Bot
-        self.client: SlashClient = SlashClient.from_gateway_bot(
-            self,
-            set_global_commands=Config.env("HOME_GUILD", int),
-        ).load_modules()
 
     @property
     def yes(self) -> hikari.KnownCustomEmoji:
@@ -114,7 +124,7 @@ class Bot(lightbulb.Bot):
                 self.guilds[guild] = {"prefix": prefix}
 
         self.scheduler.start()
-        self.add_check(self._dm_command)
+        self.add_check(self.no_dm_commands)
         # self.music = self.get_plugin("Music")
         # await self.music.connect()
         # Music is still a work a progress
@@ -128,11 +138,11 @@ class Bot(lightbulb.Bot):
 
     async def resolve_prefix(self, _: lightbulb.Bot, message: hikari.Message) -> str:
         """Grabs a prefix to be used in a particular context"""
-        if (id_ := message.guild_id) in self.guilds:
+        if (id_ := message.guild_id) and id_ in self.guilds:
             cached_p: str = self.guilds[id_]["prefix"]
             return cached_p
 
-        elif not await self._dm_command(message):
+        elif not await self.no_dm_commands(message):
             fetched_p: str = await self.pool.fetch(
                 "SELECT Prefix FROM guilds WHERE GuildID = $1;", id_
             )
@@ -142,6 +152,6 @@ class Bot(lightbulb.Bot):
             return "$"
 
     # TODO Find a better way. guild_id may not be cached.
-    async def _dm_command(self, message: hikari.Message) -> bool:
+    async def no_dm_commands(self, message: hikari.Message) -> bool:
         """Checks if command was invoked in DMs"""
         return message.guild_id is not None

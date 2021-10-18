@@ -1,12 +1,9 @@
-import asyncio
 import re
 
 import lightbulb
 import hikari
 
 import jonxhikari
-
-from pprint import pprint
 
 
 class Compile(lightbulb.Plugin):
@@ -45,8 +42,8 @@ class Compile(lightbulb.Plugin):
         if not self.langs:
             await self.get_langs()
 
-        if not (matches := re.match("```(\w+)\s([\w\W]+)[\s*]?```", code)):
-            output = f"{await self.bot.resolve_prefix(self.bot, ctx.message)}run \`\`\`python\nprint('This is a test')\`\`\`"
+        if not (matches := re.match(r"```(\w+)\s([\w\W]+)[\s*]?```", code)):
+            output = f"{await self.bot.resolve_prefix(self.bot, ctx.message)}run \`\`\`python\nprint('This is a test')\`\`\`" #type: ignore
             await ctx.respond(
                 f"Wrong format. Use a code block.\nSpecify lang inside first set of triple backticks. Example:\n\n{output}",
                 reply=True,
@@ -90,11 +87,13 @@ class Compile(lightbulb.Plugin):
 
         await ctx.respond(
             embed=self.bot.embeds.build(
-                ctx=ctx, fields=fields, color=color, header="Source code evaluation results"
+                ctx=ctx,
+                fields=fields,
+                color=color, #type: ignore
+                header="Source code evaluation results",
             ),
             reply=True,
         )
-
 
 def load(bot: jonxhikari.Bot) -> None:
     bot.add_plugin(Compile(bot))
