@@ -21,8 +21,8 @@ websockets = "^10.0"
 black = "^21.7b0"
 mypy = "^0.910"
 types-aiofiles = "^0.1.9"
-hikari-lightbulb = "^1.4.0"
-hikari-tanjun = {git = "https://github.com/FasterSpeeding/Tanjun.git", rev = "master"}
+hikari-lightbulb = "1.5.2"
+hikari-tanjun = "2.1.2a1"
 
 [tool.poetry.dev-dependencies]
 

@@ -15,9 +15,8 @@ class SlashClient(tanjun.Client):
 
     def load_modules(self) -> "SlashClient":
         """Loads Tanjun modules."""
-        path = Path(".").glob("./jonxhikari/core/modules/*.py")
-        super().load_modules(*(f"jonxhikari.core.modules.{p.stem}" for p in path))
-
+        path = "./jonxhikari/core/modules/*.py"
+        super().load_modules(*Path(".").glob(path))
         return self
 
     @classmethod
