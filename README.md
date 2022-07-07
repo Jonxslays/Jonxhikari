@@ -2,6 +2,9 @@
 > This project is not intended to be used in production.
 > The source is available for anyone who is trying to learn to utilize Hikari.
 
+This bot is now sorely out of date.
+For an up-to-date and maintained example see [Starr](https://github.com/Jonxslays/Starr).
+
 Not many people know about this library yet, so finding information is tough sometimes. This library
 has it's own way of doing things but it's been a blast to learn!
 
